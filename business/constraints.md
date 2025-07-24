@@ -6,7 +6,7 @@
 - **MVP Deadline**: Month 3 end - March 31, 2025
 - **Beta Launch**: Month 2 end - February 28, 2025
 - **Critical Path Dependencies**:
-  - Month 1: Data pipeline from 500.farm operational, basic dashboard functional
+  - Month 1: Data pipeline from https://500.farm/vastai-exporter/ operational, basic dashboard functional
   - Month 2: User authentication system, QA agent deployment, Discord community launch
   - Month 3: Pricing intelligence integration, alert system testing, beta user feedback implementation
 
@@ -27,7 +27,7 @@
   - Months 10-12: Enterprise sales pipeline, white-label development
 
 ### Critical External Dependencies
-- **500.farm API Stability**: Required for real-time data pipeline (no backup currently identified)
+- **https://500.farm/vastai-exporter/ API Stability**: Required for real-time data pipeline (no backup currently identified)
 - **Discord API Changes**: Community integration depends on stable Discord webhook/bot APIs
 - **Hosting Platform APIs**: RunPod, Lambda Labs integration timelines depend on their API availability
 - **AI Service Reliability**: Claude Code and Gemini API uptime affects core AI features
@@ -67,7 +67,7 @@
 - **Primary Development Stack**: AI-first development using Claude Code and existing LynxLab infrastructure
 - **Database Requirements**: Support for real-time data updates, user analytics, and AI conversation memory
 - **Frontend Constraints**: Must work on desktop and mobile browsers, <2 second load times
-- **API Integration Limits**: 500.farm rate limits, hosting platform API restrictions
+- **API Integration Limits**: https://500.farm/vastai-exporter/ rate limits, hosting platform API restrictions
 
 ### Performance Boundaries
 - **Concurrent Users**: Initial infrastructure supports 100 concurrent users, scaling required for 1000+
@@ -76,7 +76,7 @@
 - **Bandwidth Costs**: Real-time dashboard updates may require CDN integration for global users
 
 ### Integration Limitations
-- **500.farm Dependency**: Single point of failure for market data (no official SLA)
+- **https://500.farm/vastai-exporter/ Dependency**: Single point of failure for market data (no official SLA)
 - **Discord Rate Limits**: Community integration limited by Discord API rate restrictions
 - **AI Model Constraints**: Conversation memory and personalization limited by token limits and costs
 - **Third-Party APIs**: Hosting platforms may restrict data access or change terms
@@ -108,7 +108,7 @@
 - **International Trade**: Export compliance for users in restricted countries
 
 ### Intellectual Property Considerations
-- **Data Sources**: Fair use of 500.farm data, potential licensing agreements needed
+- **Data Sources**: Fair use of https://500.farm/vastai-exporter/ data, potential licensing agreements needed
 - **Competitor Analysis**: Legal boundaries for competitive intelligence gathering
 - **User Content**: Terms of service for user-generated content and data ownership
 - **Open Source**: Clear licensing for any open-source components or community contributions
@@ -129,7 +129,7 @@
 
 ### Third-Party Dependencies
 - **AI Service Availability**: Dependent on Claude Code and Gemini API stability and pricing
-- **Data Source Reliability**: 500.farm uptime and data quality affects core functionality
+- **Data Source Reliability**: https://500.farm/vastai-exporter/ uptime and data quality affects core functionality
 - **Payment Processing**: Stripe availability required for subscription business model
 - **Community Platform**: Discord platform stability affects user acquisition strategy
 
@@ -186,7 +186,7 @@
 ## Risk Mitigation Strategies
 
 ### Technical Risk Mitigation
-- **Data Source Diversification**: Begin developing direct platform integrations to reduce 500.farm dependency
+- **Data Source Diversification**: Begin developing direct platform integrations to reduce https://500.farm/vastai-exporter/ dependency
 - **Infrastructure Scaling**: Implement auto-scaling and monitoring for user growth management
 - **AI Cost Management**: Usage-based pricing models and cost monitoring dashboards
 - **Performance Optimization**: Regular load testing and optimization cycles

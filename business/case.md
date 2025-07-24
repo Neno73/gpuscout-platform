@@ -81,7 +81,7 @@ The GPU hosting market has exploded to over 20,000 individual hosts and small fa
 ### Operational Costs
 - **Year 1**: $6,000-12,000 (AI APIs scale with usage)
 - **Year 2**: $15,000-30,000 (expanded infrastructure and integrations)
-- **Ongoing**: Domain/SSL (~$100/year), data sources (500.farm free), marketing tools
+- **Ongoing**: Domain/SSL (~$100/year), data sources (https://500.farm/vastai-exporter/ free), marketing tools
 
 ### Revenue Model
 - **Free Tier**: Basic dashboard and analytics (community building)
@@ -114,7 +114,7 @@ The GPU hosting market has exploded to over 20,000 individual hosts and small fa
 ## Risk Assessment
 
 ### Technical Risks
-- **Data Source Dependency**: Reliance on 500.farm free API (Mitigation: Develop direct platform integrations)
+- **Data Source Dependency**: Reliance on https://500.farm/vastai-exporter/ free API (Mitigation: Develop direct platform integrations)
 - **AI Infrastructure Scaling**: Unexpected cost increases with user growth (Mitigation: Usage-based pricing, cost monitoring)
 - **Performance Requirements**: <2 second load times with growing data sets (Mitigation: Optimized architecture, caching strategies)
 

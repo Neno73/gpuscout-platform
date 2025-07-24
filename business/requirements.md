@@ -228,7 +228,7 @@ GPUScout empowers GPU hosts with AI-driven analytics and optimization insights, 
 - **Database Scaling**: Support for horizontal scaling as data volumes increase
 
 ### Integration Requirements
-- **Data Sources**: Real-time integration with 500.farm API and major hosting platforms
+- **Data Sources**: Real-time integration with https://500.farm/vastai-exporter/ API and major hosting platforms
 - **Discord Integration**: Seamless community interaction and notification delivery
 - **Payment Processing**: Stripe integration for subscription management
 - **Email Services**: Reliable email delivery for alerts and communications
