@@ -29,6 +29,16 @@ APP_URL = "https://gpuscout.ai"
 JWT_EXPIRES_IN = "1h"
 REFRESH_TOKEN_EXPIRES_IN = "7d"
 
+# Scheduled jobs
+[triggers]
+crons = [
+  "0 2 * * *",    # Daily data retention at 2 AM UTC
+  "*/5 * * * *",  # GPU stats collection every 5 minutes
+  "*/2 * * * *",  # Offers collection every 2 minutes (real-time pricing)
+  "*/30 * * * *", # Hosts collection every 30 minutes
+  "*/1 * * * *"   # Metrics collection every 1 minute (real-time)
+]
+
 # Secrets (set via wrangler secret put)
 # JWT_SECRET
 # SENDGRID_API_KEY

@@ -356,43 +356,36 @@ async function handleDataSync(request: Request, env: Env): Promise<Response> {
 
 /**
  * Historical data endpoint for trends and analytics
+ * Uses tiered data: raw data for last 3 days, aggregated data for older periods
  */
 async function handleHistoricalData(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const model = url.searchParams.get('model');
   const days = parseInt(url.searchParams.get('days') || '7');
-  const metric = url.searchParams.get('metric') || 'median_price';
+  const granularity = url.searchParams.get('granularity') || 'daily'; // 'hourly' or 'daily'
 
   try {
-    let query = `
-      SELECT 
-        DATE(created_at) as date,
-        model,
-        AVG(${metric}) as avg_value,
-        MIN(${metric}) as min_value,
-        MAX(${metric}) as max_value,
-        COUNT(*) as data_points
-      FROM gpu_stats_history 
-      WHERE created_at >= datetime('now', '-${days} days')
-      ${model ? 'AND model = ?' : ''}
-      GROUP BY DATE(created_at), model
-      ORDER BY date DESC, model
-    `;
-
-    const results = model 
-      ? await env.DB.prepare(query).bind(model).all()
-      : await env.DB.prepare(query).all();
+    let results: any[] = [];
+    
+    if (days <= 3 && granularity === 'hourly') {
+      // Use raw data for recent short-term queries with hourly granularity
+      results = await getRecentRawData(env, model, days);
+    } else {
+      // Use aggregated daily data for longer periods or daily granularity
+      results = await getAggregatedHistoricalData(env, model, days);
+    }
 
     return Response.json({
       success: true,
       data: {
-        historical: results.results || [],
+        historical: results,
         period: `${days} days`,
-        metric
+        granularity,
+        dataSource: days <= 3 && granularity === 'hourly' ? 'raw' : 'aggregated'
       },
       meta: {
         timestamp: new Date().toISOString(),
-        dataSource: 'historical-db'
+        recordCount: results.length
       }
     });
 
@@ -403,6 +396,66 @@ async function handleHistoricalData(request: Request, env: Env): Promise<Respons
       error: 'Failed to fetch historical data'
     }, { status: 500 });
   }
+}
+
+/**
+ * Get recent raw data for short-term detailed analysis
+ */
+async function getRecentRawData(env: Env, model: string | null, days: number): Promise<any[]> {
+  const query = `
+    SELECT 
+      datetime(created_at) as timestamp,
+      gpu_name as model,
+      price_base_per_hour as price,
+      dlperf,
+      country,
+      verified,
+      rentable
+    FROM gpu_marketplace_offers 
+    WHERE created_at >= datetime('now', '-${days} days')
+    ${model ? 'AND gpu_name = ?' : ''}
+    ORDER BY created_at DESC, gpu_name
+    LIMIT 1000
+  `;
+
+  const results = model 
+    ? await env.DB.prepare(query).bind(model).all()
+    : await env.DB.prepare(query).all();
+
+  return results.results || [];
+}
+
+/**
+ * Get aggregated historical data from daily summaries
+ */
+async function getAggregatedHistoricalData(env: Env, model: string | null, days: number): Promise<any[]> {
+  const query = `
+    SELECT 
+      sample_date as date,
+      gpu_model as model,
+      price_median,
+      price_p10,
+      price_p90,
+      price_min,
+      price_max,
+      total_offers,
+      available_offers,
+      verified_offers,
+      avg_dlperf,
+      country_count,
+      top_countries,
+      source_records
+    FROM gpu_price_trends 
+    WHERE sample_date >= date('now', '-${days} days')
+    ${model ? 'AND gpu_model = ?' : ''}
+    ORDER BY sample_date DESC, gpu_model
+  `;
+
+  const results = model 
+    ? await env.DB.prepare(query).bind(model).all()
+    : await env.DB.prepare(query).all();
+
+  return results.results || [];
 }
 
 /**

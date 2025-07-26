@@ -7,6 +7,7 @@ import { authHandler } from './api/authRouter';
 import { marketDataHandler } from './api/marketDataRouter';
 import { rateLimitHandler } from './middleware/rateLimit';
 import { corsHandler } from './middleware/cors';
+import { handleScheduled, handleManualScheduled, getScheduledJobStatus } from './handlers/scheduledHandler';
 
 export interface Env {
   DB: D1Database;
@@ -44,6 +45,17 @@ export default {
       return corsHandler(request, response);
     }
     
+    // Route to scheduled job management endpoints
+    if (url.pathname === '/api/scheduled/trigger') {
+      const response = await handleManualScheduled(request, env);
+      return corsHandler(request, response);
+    }
+    
+    if (url.pathname === '/api/scheduled/status') {
+      const response = await getScheduledJobStatus(env);
+      return corsHandler(request, response);
+    }
+    
     // Health check endpoint
     if (url.pathname === '/health') {
       return new Response(JSON.stringify({
@@ -68,5 +80,9 @@ export default {
         'Content-Type': 'application/json'
       }
     });
+  },
+
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    await handleScheduled(event, env);
   }
 };

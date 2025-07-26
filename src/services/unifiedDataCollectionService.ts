@@ -256,8 +256,8 @@ export class UnifiedDataCollectionService {
            available_verified_count, available_verified_median, available_verified_p10, available_verified_p90,
            available_unverified_count, available_unverified_median, available_unverified_p10, available_unverified_p90,
            total_all_count, total_all_median, total_all_p10, total_all_p90,
-           vram_gb, dlperf, tflops, data_timestamp)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           vram_gb, dlperf, tflops, data_timestamp, expires_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           modelData.name,
           this.getStatValue(stats, 'rented', 'verified', 'count'),
@@ -283,7 +283,8 @@ export class UnifiedDataCollectionService {
           info?.vram || null,
           info?.dlperf || null,
           info?.tflops || null,
-          timestamp
+          timestamp,
+          this.getExpirationDate()
         ).run();
 
         processed++;
@@ -314,8 +315,8 @@ export class UnifiedDataCollectionService {
           INSERT OR REPLACE INTO gpu_providers 
           (host_id, total_machines, total_gpus_by_model, total_tflops,
            country, location, latitude, longitude, location_accuracy, isp, domain,
-           inet_up_mbps, inet_down_mbps, ip_address_count, data_timestamp)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           inet_up_mbps, inet_down_mbps, ip_address_count, data_timestamp, expires_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           host.host_id,
           host.machine_ids?.length || 0,
@@ -331,7 +332,8 @@ export class UnifiedDataCollectionService {
           host.inet_up || null,
           host.inet_down || null,
           host.ip_addresses?.length || 0,
-          timestamp
+          timestamp,
+          this.getExpirationDate()
         ).run();
 
         processed++;
@@ -361,14 +363,15 @@ export class UnifiedDataCollectionService {
             
             await this.env.DB.prepare(`
               INSERT INTO gpu_availability_metrics 
-              (gpu_name, rented, verified, count, collected_at)
-              VALUES (?, ?, ?, ?, ?)
+              (gpu_name, rented, verified, count, collected_at, expires_at)
+              VALUES (?, ?, ?, ?, ?, ?)
             `).bind(
               gpuName,
               rented === 'yes',
               verified === 'yes',
               parseInt(count),
-              timestamp
+              timestamp,
+              this.getExpirationDate()
             ).run();
 
             processed++;
@@ -463,6 +466,15 @@ export class UnifiedDataCollectionService {
       errorMessage || null,
       id
     ).run();
+  }
+
+  /**
+   * Get expiration date for new records (3 days from now)
+   */
+  private getExpirationDate(): string {
+    const expiration = new Date();
+    expiration.setDate(expiration.getDate() + 3);
+    return expiration.toISOString();
   }
 
   /**
