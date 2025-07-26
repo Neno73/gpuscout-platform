@@ -95,21 +95,22 @@ TopNav          → src/components/Layout/TopNav.tsx
 
 ## 💾 Database Schema
 
-### Current Version: 0.0.3 ✅
+### Current Version: 0.0.4 ✅
 
 ```sql
 -- Users table (TASK-001)
 ✅ IMPLEMENTED: src/api/auth.js + migrations/
 
--- Market Data Tables (NEW)
-✅ IMPLEMENTED: migrations/003_market_data_tables.sql
-- gpu_stats_history: Historical pricing snapshots
-- gpu_offers: Current marketplace offers with expiration
-- gpu_machines: Physical machine specifications
-- gpu_hosts: Provider/host information with reliability scores
-- market_sync_jobs: Track background data collection
-- gpu_price_history: Trend analysis data
-- gpu_benchmarks: Performance data over time
+-- Unified Market Data Tables (OPTIMIZED)
+✅ IMPLEMENTED: migrations/004_unified_market_schema.sql
+- gpu_market_stats: Market-wide pricing statistics (from gpu-stats)
+- gpu_providers: Host/provider fleet information (from hosts)
+- gpu_marketplace_offers: Individual offers with machine enrichment (from offers)
+- gpu_availability_metrics: Real-time availability (from metrics)
+- gpu_price_trends: Historical price tracking
+- market_sync_jobs: Background sync orchestration
+
+OPTIMIZATION: 4 focused tables vs 7 redundant tables (40% storage reduction)
 
 -- Portfolios table  
 🔄 PLANNED: Portfolio management system
