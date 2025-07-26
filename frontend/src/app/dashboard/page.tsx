@@ -266,12 +266,11 @@ export default function DashboardPage() {
   const fetchMarketData = async () => {
     setLoading(true)
     try {
-      // Fetch from actual Cloudflare Workers API endpoints
-      const [gpuResponse, offerResponse, providerResponse, availabilityResponse] = await Promise.all([
+      // Fetch from actual Cloudflare Workers API endpoints  
+      const [gpuResponse, offerResponse, hostsResponse] = await Promise.all([
         fetch('/api/market/gpu-stats').catch(() => null),
         fetch('/api/market/offers').catch(() => null),
-        fetch('/api/market/providers').catch(() => null),
-        fetch('/api/market/availability').catch(() => null)
+        fetch('/api/market/hosts').catch(() => null)
       ])
 
       if (gpuResponse?.ok) {
