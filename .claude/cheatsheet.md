@@ -43,12 +43,12 @@ GET    /api/chat/history       → src/controllers/chat.js:getHistory()
 
 ### Market Intelligence & Pricing
 ```
-✅ IMPLEMENTED (Data Collection Pipeline)
+✅ IMPLEMENTED (Unified Data Collection)
 GET    /api/market/gpu-stats   → src/api/marketDataRouter.ts:handleGPUStats()
 GET    /api/market/offers      → src/api/marketDataRouter.ts:handleOffers()
-GET    /api/market/machines    → src/api/marketDataRouter.ts:handleMachines()
-GET    /api/market/hosts       → src/api/marketDataRouter.ts:handleHosts()
-POST   /api/market/sync        → src/api/marketDataRouter.ts:handleDataSync()
+GET    /api/market/providers   → src/api/marketDataRouter.ts:handleProviders()
+GET    /api/market/metrics     → src/api/marketDataRouter.ts:handleMetrics()
+POST   /api/market/sync        → src/services/unifiedDataCollectionService.ts
 GET    /api/market/historical  → src/api/marketDataRouter.ts:handleHistoricalData()
 ```
 
