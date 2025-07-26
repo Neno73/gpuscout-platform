@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Cpu, DollarSign, HardDrive, Zap, AlertCircle } from 'lucide-react';
 import { useGpuData } from '@/hooks/useGpuData';
 import { useGpuInstances, GpuInstance } from '@/hooks/useGpuInstances';
+import { useMarketplaceOffers } from '@/hooks/useMarketplaceOffers';
 
 interface AddGpuModalProps {
   children: ReactNode;
@@ -20,36 +21,32 @@ interface AddGpuModalProps {
 
 export function AddGpuModal({ children, portfolioId, onSuccess }: AddGpuModalProps) {
   const [open, setOpen] = useState(false);
-  const [selectedGpu, setSelectedGpu] = useState<string>('');
-  const [quantity, setQuantity] = useState(1);
-  const [customNamePrefix, setCustomNamePrefix] = useState('');
+  const [selectedOffers, setSelectedOffers] = useState<number[]>([]);
+  const [customName, setCustomName] = useState('');
   
-  const { gpus, loading: gpuLoading, error: gpuError, getPopularGpus } = useGpuData();
+  const { offers, loading: offersLoading, error: offersError, getBestOffers } = useMarketplaceOffers();
   const { addGpuInstances, loading: addLoading, error: addError } = useGpuInstances();
 
-  const popularGpus = getPopularGpus(12);
-  const selectedGpuData = gpus.find(gpu => gpu.name === selectedGpu);
+  const bestOffers = getBestOffers(12);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedGpu || quantity < 1) {
+    if (selectedOffers.length === 0) {
       return;
     }
 
     const result = await addGpuInstances(portfolioId, {
-      gpuModel: selectedGpu,
-      quantity,
-      customNamePrefix: customNamePrefix || undefined
+      offerIds: selectedOffers,
+      customName: customName || undefined
     });
 
     if (result) {
       onSuccess?.(result);
       setOpen(false);
       // Reset form
-      setSelectedGpu('');
-      setQuantity(1);
-      setCustomNamePrefix('');
+      setSelectedOffers([]);
+      setCustomName('');
     }
   };
 
@@ -69,16 +66,16 @@ export function AddGpuModal({ children, portfolioId, onSuccess }: AddGpuModalPro
             Add GPU to Portfolio
           </DialogTitle>
           <DialogDescription>
-            Select GPU models to track in your portfolio. Choose from popular models with real-time market data.
+            Select real GPU instances from the marketplace to add to your portfolio. All offers are verified and available for rent.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* GPU Selection */}
+          {/* Marketplace Offers Selection */}
           <div className="space-y-3">
-            <Label className="text-base font-semibold">Select GPU Model</Label>
+            <Label className="text-base font-semibold">Select GPU Offers (Choose multiple)</Label>
             
-            {gpuLoading ? (
+            {offersLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i}>
@@ -90,44 +87,53 @@ export function AddGpuModal({ children, portfolioId, onSuccess }: AddGpuModalPro
                   </Card>
                 ))}
               </div>
-            ) : gpuError ? (
+            ) : offersError ? (
               <Card>
                 <CardContent className="p-4 text-center">
                   <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-red-600">Failed to load GPU data</p>
+                  <p className="text-red-600">Failed to load marketplace offers</p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
-                {popularGpus.map((gpu) => (
+                {bestOffers.map((offer) => (
                   <Card 
-                    key={gpu.name}
+                    key={offer.offer_id}
                     className={`cursor-pointer transition-colors hover:bg-accent ${
-                      selectedGpu === gpu.name ? 'ring-2 ring-primary bg-accent' : ''
+                      selectedOffers.includes(offer.offer_id) ? 'ring-2 ring-primary bg-accent' : ''
                     }`}
-                    onClick={() => setSelectedGpu(gpu.name)}
+                    onClick={() => {
+                      setSelectedOffers(prev => 
+                        prev.includes(offer.offer_id) 
+                          ? prev.filter(id => id !== offer.offer_id)
+                          : [...prev, offer.offer_id]
+                      );
+                    }}
                   >
                     <CardContent className="p-3">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-semibold text-sm">{gpu.name}</h4>
+                          <h4 className="font-semibold text-sm">{offer.gpu_name}</h4>
                           <Badge variant="secondary" className="text-xs">
-                            {gpu.stats.all.all[0]?.count || 0} units
+                            ID: {offer.offer_id}
                           </Badge>
                         </div>
                         
                         <div className="space-y-1 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <HardDrive className="h-3 w-3" />
-                            <span>{formatVram(gpu.info.vram)}</span>
+                            <DollarSign className="h-3 w-3" />
+                            <span>{formatPrice(offer.price_base_per_hour)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Zap className="h-3 w-3" />
-                            <span>{formatTflops(gpu.info.tflops)}</span>
+                            <span>{offer.dlperf.toFixed(1)} DLPERF</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3" />
-                            <span>{formatPrice(gpu.stats.all.all[0]?.price_median || 0)}</span>
+                            <Cpu className="h-3 w-3" />
+                            <span>{offer.location}</span>
+                          </div>
+                          <div className="text-xs text-green-600">
+                            {(offer.reliability_score * 100).toFixed(0)}% reliable
                           </div>
                         </div>
                       </div>
@@ -138,60 +144,52 @@ export function AddGpuModal({ children, portfolioId, onSuccess }: AddGpuModalPro
             )}
           </div>
 
-          {/* Selected GPU Details */}
-          {selectedGpuData && (
+          {/* Selected Offers Summary */}
+          {selectedOffers.length > 0 && (
             <Card className="bg-accent/50">
               <CardContent className="p-4">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <Cpu className="h-4 w-4" />
-                  {selectedGpuData.name} Details
+                  Selected Offers ({selectedOffers.length})
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">VRAM</div>
-                    <div className="font-medium">{formatVram(selectedGpuData.info.vram)}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Performance</div>
-                    <div className="font-medium">{formatTflops(selectedGpuData.info.tflops)}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Median Price</div>
-                    <div className="font-medium">{formatPrice(selectedGpuData.stats.all.all[0]?.price_median || 0)}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Available</div>
-                    <div className="font-medium">{selectedGpuData.stats.all.all[0]?.count || 0} units</div>
+                <div className="space-y-2">
+                  {selectedOffers.map(offerId => {
+                    const offer = bestOffers.find(o => o.offer_id === offerId);
+                    if (!offer) return null;
+                    return (
+                      <div key={offerId} className="flex justify-between items-center text-sm">
+                        <span>{offer.gpu_name} - {offer.location}</span>
+                        <span className="font-medium">{formatPrice(offer.price_base_per_hour)}</span>
+                      </div>
+                    );
+                  })}
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-between font-semibold">
+                      <span>Total Cost:</span>
+                      <span>
+                        {formatPrice(
+                          selectedOffers.reduce((sum, offerId) => {
+                            const offer = bestOffers.find(o => o.offer_id === offerId);
+                            return sum + (offer?.price_base_per_hour || 0);
+                          }, 0)
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Quantity and Custom Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity</Label>
-              <Input
-                id="quantity"
-                type="number"
-                min="1"
-                max="50"
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                placeholder="1"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="customName">Custom Name Prefix (Optional)</Label>
-              <Input
-                id="customName"
-                value={customNamePrefix}
-                onChange={(e) => setCustomNamePrefix(e.target.value)}
-                placeholder="e.g., Production, Dev, Node"
-              />
-            </div>
+          {/* Custom Name */}
+          <div className="space-y-2">
+            <Label htmlFor="customName">Custom Name (Optional)</Label>
+            <Input
+              id="customName"
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+              placeholder="e.g., Production Farm, AI Training Cluster"
+            />
           </div>
 
           {/* Error Display */}
@@ -218,9 +216,9 @@ export function AddGpuModal({ children, portfolioId, onSuccess }: AddGpuModalPro
             </Button>
             <Button 
               type="submit" 
-              disabled={!selectedGpu || quantity < 1 || addLoading}
+              disabled={selectedOffers.length === 0 || addLoading}
             >
-              {addLoading ? 'Adding...' : `Add ${quantity} ${selectedGpu || 'GPU'}${quantity > 1 ? 's' : ''}`}
+              {addLoading ? 'Adding...' : `Add ${selectedOffers.length} GPU Instance${selectedOffers.length > 1 ? 's' : ''}`}
             </Button>
           </div>
         </form>

@@ -13,9 +13,8 @@ export interface GpuInstance {
 }
 
 interface AddGpuInstanceData {
-  gpuModel: string;
-  quantity: number;
-  customNamePrefix?: string;
+  offerIds: number[];
+  customName?: string;
 }
 
 interface UpdateGpuInstanceData {
