@@ -59,21 +59,108 @@ CREATE TABLE gpu_stats_history (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- GPU Offers (Current marketplace offers)
+-- GPU Offers (Current marketplace offers) - Updated for real 500.farm structure
 CREATE TABLE gpu_offers (
-    id TEXT PRIMARY KEY,
-    model TEXT NOT NULL,
-    price_per_hour REAL NOT NULL,
-    availability BOOLEAN DEFAULT TRUE,
-    location TEXT,
-    performance_score REAL,
-    memory_gb INTEGER,
-    host_id TEXT,
-    external_offer_id TEXT, -- Original ID from 500.farm
-    specifications TEXT, -- JSON blob for detailed specs
+    id INTEGER PRIMARY KEY, -- ask_contract_id from 500.farm
+    bundle_id INTEGER,
+    machine_id INTEGER,
+    host_id INTEGER,
+    
+    -- GPU specifications
+    gpu_name TEXT NOT NULL,
+    gpu_ram INTEGER, -- GPU memory in MB
+    gpu_total_ram INTEGER,
+    num_gpus INTEGER DEFAULT 1,
+    gpu_arch TEXT,
+    compute_cap INTEGER,
+    gpu_max_power INTEGER,
+    gpu_max_temp INTEGER,
+    gpu_mem_bw REAL,
+    gpu_lanes INTEGER,
+    pci_gen INTEGER,
+    pcie_bw REAL,
+    
+    -- CPU specifications  
+    cpu_name TEXT,
+    cpu_cores INTEGER,
+    cpu_cores_effective INTEGER,
+    cpu_ghz REAL,
+    cpu_ram INTEGER,
+    cpu_arch TEXT,
+    has_avx INTEGER,
+    
+    -- Storage
+    disk_name TEXT,
+    disk_space REAL,
+    disk_bw REAL,
+    
+    -- Pricing
+    dph_base REAL NOT NULL, -- Base price per hour
+    dph_total_adj REAL, -- Total adjusted price per hour  
+    discounted_dph_total REAL,
+    min_bid REAL,
+    storage_cost REAL,
+    vram_costperhour REAL,
+    
+    -- Internet
+    inet_down REAL,
+    inet_up REAL,
+    inet_down_cost REAL,
+    inet_up_cost REAL,
+    internet_down_cost_per_tb REAL,
+    internet_up_cost_per_tb REAL,
+    
+    -- Performance metrics
+    dlperf REAL, -- Deep learning performance
+    dlperf_per_dphtotal REAL,
+    flops_per_dphtotal REAL,
+    total_flops REAL,
+    score REAL, -- Overall score
+    
+    -- Reliability & verification
+    reliability REAL,
+    reliability2 REAL,
+    reliability_mult REAL,
+    verification TEXT,
+    verified BOOLEAN DEFAULT FALSE,
+    expected_reliability REAL,
+    
+    -- Location & network
+    geolocation TEXT,
+    geolocode INTEGER,
+    public_ipaddr TEXT,
+    static_ip BOOLEAN DEFAULT FALSE,
+    direct_port_count INTEGER,
+    
+    -- System info
+    os_version TEXT,
+    driver_version TEXT,
+    driver_vers INTEGER,
+    cuda_max_good REAL,
+    mobo_name TEXT,
+    
+    -- Availability 
+    rentable BOOLEAN DEFAULT TRUE,
+    start_date INTEGER, -- Unix timestamp
+    end_date INTEGER, -- Unix timestamp  
+    duration REAL,
+    time_remaining TEXT,
+    
+    -- VM settings
+    vms_enabled BOOLEAN DEFAULT FALSE,
+    is_vm_deverified BOOLEAN DEFAULT FALSE,
+    
+    -- Business logic
+    hosting_type INTEGER,
+    resource_type TEXT DEFAULT 'gpu',
+    discount_rate REAL,
+    credit_discount_max REAL,
+    
+    -- Metadata
+    data_timestamp TEXT, -- When this data was collected
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    expires_at DATETIME -- When offer expires/becomes stale
+    expires_at DATETIME -- When this offer becomes stale
 );
 
 -- GPU Machines (Physical machine data)
