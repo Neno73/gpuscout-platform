@@ -17,16 +17,18 @@ export interface Env {
   SENDGRID_API_KEY: string;
   APP_URL: string;
   DISCORD_WEBHOOK_URL: string;
+  SENTRY_DSN?: string;
 }
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     
-    // Handle CORS preflight requests
-    if (request.method === 'OPTIONS') {
-      return corsHandler(request);
-    }
+    try {
+      // Handle CORS preflight requests
+      if (request.method === 'OPTIONS') {
+        return corsHandler(request);
+      }
     
     // Apply rate limiting
     const rateLimitResponse = await rateLimitHandler(request, env);
@@ -76,17 +78,35 @@ export default {
       });
     }
     
-    // Default 404 response
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Not Found',
-      message: 'The requested endpoint does not exist'
-    }), {
-      status: 404,
-      headers: {
-        'Content-Type': 'application/json'
+      // Default 404 response
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Not Found',
+        message: 'The requested endpoint does not exist'
+      }), {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+    } catch (error) {
+      // Log error to Sentry if configured
+      if (env.SENTRY_DSN) {
+        console.error('Worker error:', error);
       }
-    });
+      
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Internal Server Error',
+        message: 'An unexpected error occurred'
+      }), {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {

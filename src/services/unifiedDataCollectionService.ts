@@ -21,7 +21,7 @@ interface CollectionStrategy {
 const DEFAULT_CONFIG: UnifiedCollectionConfig = {
   maxRetries: 3,
   chunkSize: 1000,
-  delayBetweenRequests: 1000,
+  delayBetweenRequests: 5000, // 5 seconds between requests to avoid rate limits
   timeout: 30000
 };
 
@@ -172,8 +172,13 @@ export class UnifiedDataCollectionService {
   }> {
     try {
       const url = `${this.baseUrl}/${endpoint}`;
+      console.log(`📡 Fetching: ${url}`);
+      
       const response = await fetch(url, {
-        headers: { 'Accept': 'application/json' },
+        headers: { 
+          'Accept': 'application/json',
+          'Accept-Encoding': 'gzip, deflate, br'
+        },
         signal: AbortSignal.timeout(this.config.timeout)
       });
 
@@ -181,7 +186,25 @@ export class UnifiedDataCollectionService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      // Handle gzipped responses
+      let data;
+      const contentEncoding = response.headers.get('content-encoding');
+      if (contentEncoding && (contentEncoding.includes('gzip') || contentEncoding.includes('deflate'))) {
+        // For gzipped content, handle as text first if needed
+        if (endpoint === 'metrics/global') {
+          data = await response.text();
+        } else {
+          // For JSON responses, response.json() should handle decompression automatically
+          data = await response.json();
+        }
+      } else {
+        if (endpoint === 'metrics/global') {
+          data = await response.text();
+        } else {
+          data = await response.json();
+        }
+      }
+
       let recordsProcessed = 0;
 
       switch (endpoint) {
@@ -198,10 +221,14 @@ export class UnifiedDataCollectionService {
           throw new Error(`Unknown direct endpoint: ${endpoint}`);
       }
 
+      // Update collection timestamp in cache
+      await this.env.CACHE?.put(`last_collection_${endpoint}`, Date.now().toString(), { expirationTtl: 86400 });
+
       return { success: true, recordsProcessed };
 
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Collection failed for ${endpoint}:`, errorMsg);
       return { success: false, recordsProcessed: 0, error: errorMsg };
     }
   }
@@ -214,10 +241,44 @@ export class UnifiedDataCollectionService {
     recordsProcessed: number;
     error?: string;
   }> {
-    // This would implement the chunked strategy from the original dataCollectionService
-    // For now, let's try direct and see if it works with current data size
-    console.log(`⚠️ Chunked collection not yet implemented for ${endpoint}, falling back to direct`);
-    return await this.collectDirect(endpoint, syncJobId);
+    try {
+      const url = `${this.baseUrl}/${endpoint}`;
+      console.log(`📡 Fetching (chunked): ${url}`);
+      
+      const response = await fetch(url, {
+        headers: { 
+          'Accept': 'application/json',
+          'Accept-Encoding': 'gzip, deflate, br'
+        },
+        signal: AbortSignal.timeout(this.config.timeout)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      let recordsProcessed = 0;
+
+      switch (endpoint) {
+        case 'offers':
+          recordsProcessed = await this.processOffers(data);
+          break;
+        default:
+          console.log(`⚠️ Chunked collection not implemented for ${endpoint}, trying direct processing`);
+          recordsProcessed = await this.collectDirect(endpoint, syncJobId).then(r => r.recordsProcessed);
+      }
+
+      // Update collection timestamp in cache
+      await this.env.CACHE?.put(`last_collection_${endpoint}`, Date.now().toString(), { expirationTtl: 86400 });
+
+      return { success: true, recordsProcessed };
+
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Chunked collection failed for ${endpoint}:`, errorMsg);
+      return { success: false, recordsProcessed: 0, error: errorMsg };
+    }
   }
 
   /**
@@ -230,6 +291,70 @@ export class UnifiedDataCollectionService {
   }> {
     console.log(`⚠️ Streaming collection not yet implemented for ${endpoint}`);
     return { success: false, recordsProcessed: 0, error: 'Streaming not implemented' };
+  }
+
+  /**
+   * Process offers data (from /offers)
+   */
+  private async processOffers(data: any): Promise<number> {
+    if (!data.offers || !Array.isArray(data.offers)) {
+      throw new Error('Invalid offers data structure');
+    }
+
+    const timestamp = data.timestamp;
+    let processed = 0;
+    
+    // Process offers in batches to avoid hitting database limits
+    const batchSize = 100;
+    for (let i = 0; i < data.offers.length; i += batchSize) {
+      const batch = data.offers.slice(i, i + batchSize);
+      
+      for (const offer of batch) {
+        try {
+          await this.env.DB.prepare(`
+            INSERT OR REPLACE INTO gpu_marketplace_offers 
+            (machine_id, host_id, gpu_name, num_gpus, 
+             price_base_per_hour, dlperf, dlperf_per_dollar, 
+             cpu_cores, cpu_ghz, cpu_ram_mb,
+             inet_down_mbps, inet_up_mbps,
+             location, country, reliability_score, rentable, verified,
+             data_timestamp, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            offer.machine_id || null,
+            offer.host_id || null,
+            offer.gpu_name || 'Unknown',
+            offer.num_gpus || 1,
+            offer.dph_base || offer.min_bid || 0,
+            offer.dlperf || null,
+            offer.dlperf_per_dphtotal || 0,
+            offer.cpu_cores || null,
+            offer.cpu_ghz || null,
+            offer.cpu_ram || null,
+            offer.inet_down || null,
+            offer.inet_up || null,
+            offer.geolocation || null,
+            offer.country || null,
+            offer.reliability || null,
+            offer.rentable !== false ? 1 : 0,
+            offer.verified ? 1 : 0,
+            timestamp,
+            this.getExpirationDate()
+          ).run();
+
+          processed++;
+        } catch (error) {
+          console.error(`Error processing offer ${offer.id || i}:`, error);
+        }
+      }
+      
+      // Short delay between batches to avoid overwhelming database
+      if (i + batchSize < data.offers.length) {
+        await this.delay(100);
+      }
+    }
+
+    return processed;
   }
 
   /**

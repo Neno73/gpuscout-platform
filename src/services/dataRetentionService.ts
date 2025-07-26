@@ -177,8 +177,8 @@ export class DataRetentionService {
         
         -- Counts
         COUNT(*) as total_offers,
-        SUM(CASE WHEN rentable = true THEN 1 ELSE 0 END) as available_offers,
-        SUM(CASE WHEN verified = true THEN 1 ELSE 0 END) as verified_offers,
+        SUM(CASE WHEN rentable = 1 THEN 1 ELSE 0 END) as available_offers,
+        SUM(CASE WHEN verified = 1 THEN 1 ELSE 0 END) as verified_offers,
         
         -- Performance metrics
         AVG(dlperf) as avg_dlperf,
