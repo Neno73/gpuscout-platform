@@ -253,6 +253,8 @@ const mockAvailabilityData: AvailabilityMetric[] = [
 export default function DashboardPage() {
   const [gpuData, setGpuData] = useState<GPUMarketStat[]>(mockGPUData)
   const [offerData, setOfferData] = useState<MarketplaceOffer[]>(mockOfferData)
+  const [providerData, setProviderData] = useState<GPUProvider[]>(mockProviderData)
+  const [availabilityData, setAvailabilityData] = useState<AvailabilityMetric[]>(mockAvailabilityData)
   const [loading, setLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
