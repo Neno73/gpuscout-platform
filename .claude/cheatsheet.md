@@ -95,23 +95,30 @@ TopNav          → src/components/Layout/TopNav.tsx
 
 ## 💾 Database Schema
 
-### Current Version: 0.0.0
+### Current Version: 0.0.3 ✅
 
 ```sql
--- Users table
-None yet - will be updated as implemented
+-- Users table (TASK-001)
+✅ IMPLEMENTED: src/api/auth.js + migrations/
+
+-- Market Data Tables (NEW)
+✅ IMPLEMENTED: migrations/003_market_data_tables.sql
+- gpu_stats_history: Historical pricing snapshots
+- gpu_offers: Current marketplace offers with expiration
+- gpu_machines: Physical machine specifications
+- gpu_hosts: Provider/host information with reliability scores
+- market_sync_jobs: Track background data collection
+- gpu_price_history: Trend analysis data
+- gpu_benchmarks: Performance data over time
 
 -- Portfolios table  
-None yet - will be updated as implemented
-
--- GPUs table
-None yet - will be updated as implemented
+🔄 PLANNED: Portfolio management system
 
 -- Alert rules table
-None yet - will be updated as implemented
+🔄 PLANNED: Alert system implementation
 
 -- Chat conversations table
-None yet - will be updated as implemented
+🔄 PLANNED: AI chat interface
 ```
 
 ## 🔌 External Integrations
