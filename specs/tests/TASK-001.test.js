@@ -3,13 +3,10 @@
  * Generated from specs/tests/authentication-system.test.md
  */
 
-const request = require('supertest');
-const bcrypt = require('bcryptjs');
-const { SignJWT, jwtVerify } = require('jose');
-const crypto = require('crypto');
-
-// Import validation functions
-const { validateEmail, validatePasswordStrength, hashPassword, verifyPassword, generateTokens, verifyToken } = require('../../src/utils/validation');
+import { validateEmail, validatePasswordStrength } from '../../src/utils/validation.js';
+import { hashPassword, verifyPassword } from '../../src/utils/password.js';
+import { generateTokens, verifyToken } from '../../src/utils/jwt.js';
+import { SignJWT } from 'jose';
 
 describe('Email Validation', () => {
   test('accepts valid email formats', () => {

@@ -2,10 +2,191 @@
 > gpuscout-platform@1.0.0 test
 > jest specs/tests/TASK-001.test.js
 
-● Validation Error:
+FAIL specs/tests/TASK-001.test.js
+  Email Validation
+    ✓ accepts valid email formats (5 ms)
+    ✓ rejects invalid email formats (2 ms)
+    ✕ handles edge cases (2 ms)
+  Password Strength Validation
+    ✓ accepts strong passwords (9 ms)
+    ✓ rejects weak passwords (2 ms)
+    ✕ provides helpful feedback messages (1 ms)
+  JWT Token Management
+    ✕ generates valid access and refresh tokens (1 ms)
+    ✕ access token expires in 1 hour
+    ✕ refresh token expires in 7 days
+    ✕ rejects invalid tokens (1 ms)
+    ✕ rejects expired tokens (1 ms)
+  Password Hashing
+    ✕ hashes passwords with bcrypt
+    ✕ verifies correct passwords
+    ✕ rejects incorrect passwords
+    ✕ uses 12 salt rounds for security
 
-  Option: extensionsToTreatAsEsm: ['.js', '.jsx', '.ts', '.tsx'] includes '.js' which is always inferred based on type in its nearest package.json.
+  ● Email Validation › handles edge cases
 
-  Configuration Documentation:
-  https://jestjs.io/docs/configuration
+    expect(received).toBe(expected) // Object.is equality
 
+    Expected: false
+    Received: true
+
+      43 |     expect(validateEmail(null)).toBe(false);
+      44 |     expect(validateEmail(undefined)).toBe(false);
+    > 45 |     expect(validateEmail('a'.repeat(255) + '@example.com')).toBe(false); // Too long
+         |                                                             ^
+      46 |   });
+      47 | });
+      48 |
+
+      at Object.toBe (specs/tests/TASK-001.test.js:45:61)
+
+  ● Password Strength Validation › provides helpful feedback messages
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "at least 8 characters"
+    Received array: ["Password must be at least 8 characters long", "Password must contain at least one uppercase letter", "Password must contain at least one number", "Password must contain at least one special character (@$!%*?&)"]
+
+      81 |   test('provides helpful feedback messages', () => {
+      82 |     const result = validatePasswordStrength('weak');
+    > 83 |     expect(result.feedback).toContain('at least 8 characters');
+         |                             ^
+      84 |     expect(result.feedback).toContain('uppercase letter');
+      85 |     expect(result.feedback).toContain('number');
+      86 |     expect(result.feedback).toContain('special character');
+
+      at Object.toContain (specs/tests/TASK-001.test.js:83:29)
+
+  ● JWT Token Management › generates valid access and refresh tokens
+
+    TypeError: generateTokens is not a function
+
+      93 |   
+      94 |   test('generates valid access and refresh tokens', async () => {
+    > 95 |     const tokens = await generateTokens(mockUserId, mockSecret);
+         |                          ^
+      96 |     
+      97 |     expect(tokens.accessToken).toBeDefined();
+      98 |     expect(tokens.refreshToken).toBeDefined();
+
+      at Object.generateTokens (specs/tests/TASK-001.test.js:95:26)
+
+  ● JWT Token Management › access token expires in 1 hour
+
+    TypeError: generateTokens is not a function
+
+      102 |   
+      103 |   test('access token expires in 1 hour', async () => {
+    > 104 |     const tokens = await generateTokens(mockUserId, mockSecret);
+          |                          ^
+      105 |     const payload = await verifyToken(tokens.accessToken, mockSecret);
+      106 |     
+      107 |     const issuedAt = payload.iat * 1000;
+
+      at Object.generateTokens (specs/tests/TASK-001.test.js:104:26)
+
+  ● JWT Token Management › refresh token expires in 7 days
+
+    TypeError: generateTokens is not a function
+
+      113 |   
+      114 |   test('refresh token expires in 7 days', async () => {
+    > 115 |     const tokens = await generateTokens(mockUserId, mockSecret);
+          |                          ^
+      116 |     const payload = await verifyToken(tokens.refreshToken, mockSecret);
+      117 |     
+      118 |     const issuedAt = payload.iat * 1000;
+
+      at Object.generateTokens (specs/tests/TASK-001.test.js:115:26)
+
+  ● JWT Token Management › rejects invalid tokens
+
+    TypeError: verifyToken is not a function
+
+      124 |   
+      125 |   test('rejects invalid tokens', async () => {
+    > 126 |     await expect(verifyToken('invalid-token', mockSecret))
+          |                  ^
+      127 |       .rejects.toThrow('Invalid token');
+      128 |   });
+      129 |   
+
+      at Object.verifyToken (specs/tests/TASK-001.test.js:126:18)
+
+  ● JWT Token Management › rejects expired tokens
+
+    TypeError: Invalid time period format
+
+      132 |     const expiredToken = await new SignJWT({ userId: mockUserId })
+      133 |       .setProtectedHeader({ alg: 'HS256' })
+    > 134 |       .setExpirationTime('1ms')
+          |        ^
+      135 |       .sign(new TextEncoder().encode(mockSecret));
+      136 |     
+      137 |     // Wait for token to expire
+
+      at _default (node_modules/jose/dist/browser/lib/secs.js:10:15)
+      at SignJWT.setExpirationTime (node_modules/jose/dist/browser/jwt/produce.js:53:78)
+      at Object.setExpirationTime (specs/tests/TASK-001.test.js:134:8)
+
+  ● Password Hashing › hashes passwords with bcrypt
+
+    TypeError: hashPassword is not a function
+
+      146 |   test('hashes passwords with bcrypt', async () => {
+      147 |     const password = 'SecurePass123!';
+    > 148 |     const hash = await hashPassword(password);
+          |                        ^
+      149 |     
+      150 |     expect(hash).toBeDefined();
+      151 |     expect(hash).not.toBe(password);
+
+      at Object.hashPassword (specs/tests/TASK-001.test.js:148:24)
+
+  ● Password Hashing › verifies correct passwords
+
+    TypeError: hashPassword is not a function
+
+      155 |   test('verifies correct passwords', async () => {
+      156 |     const password = 'SecurePass123!';
+    > 157 |     const hash = await hashPassword(password);
+          |                        ^
+      158 |     
+      159 |     const isValid = await verifyPassword(password, hash);
+      160 |     expect(isValid).toBe(true);
+
+      at Object.hashPassword (specs/tests/TASK-001.test.js:157:24)
+
+  ● Password Hashing › rejects incorrect passwords
+
+    TypeError: hashPassword is not a function
+
+      164 |     const password = 'SecurePass123!';
+      165 |     const wrongPassword = 'WrongPassword456!';
+    > 166 |     const hash = await hashPassword(password);
+          |                        ^
+      167 |     
+      168 |     const isValid = await verifyPassword(wrongPassword, hash);
+      169 |     expect(isValid).toBe(false);
+
+      at Object.hashPassword (specs/tests/TASK-001.test.js:166:24)
+
+  ● Password Hashing › uses 12 salt rounds for security
+
+    TypeError: hashPassword is not a function
+
+      172 |   test('uses 12 salt rounds for security', async () => {
+      173 |     const password = 'SecurePass123!';
+    > 174 |     const hash = await hashPassword(password);
+          |                        ^
+      175 |     
+      176 |     // bcrypt format: $2b$rounds$salt$hash
+      177 |     const rounds = hash.split('$')[2];
+
+      at Object.hashPassword (specs/tests/TASK-001.test.js:174:24)
+
+Test Suites: 1 failed, 1 total
+Tests:       11 failed, 4 passed, 15 total
+Snapshots:   0 total
+Time:        1.965 s
+Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.

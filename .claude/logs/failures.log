@@ -399,3 +399,24 @@ Task TASK-001 failed 5 times. Last error:
   Configuration Documentation:
   https://jestjs.io/docs/configuration
 
+Task TASK-001 failed 5 times. Last error:
+
+  ● Password Hashing › uses 12 salt rounds for security
+
+    TypeError: hashPassword is not a function
+
+      172 |   test('uses 12 salt rounds for security', async () => {
+      173 |     const password = 'SecurePass123!';
+    > 174 |     const hash = await hashPassword(password);
+          |                        ^
+      175 |     
+      176 |     // bcrypt format: $2b$rounds$salt$hash
+      177 |     const rounds = hash.split('$')[2];
+
+      at Object.hashPassword (specs/tests/TASK-001.test.js:174:24)
+
+Test Suites: 1 failed, 1 total
+Tests:       11 failed, 4 passed, 15 total
+Snapshots:   0 total
+Time:        1.965 s
+Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
