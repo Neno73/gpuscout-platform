@@ -9,10 +9,12 @@ CREATE TABLE users (
     subscription_tier TEXT DEFAULT 'free',
     email_verified BOOLEAN DEFAULT FALSE,
     verification_token TEXT,
+    verification_expires DATETIME,
     reset_token TEXT,
     reset_expires DATETIME,
     failed_login_attempts INTEGER DEFAULT 0,
     locked_until DATETIME,
+    gdpr_consent BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_login DATETIME
