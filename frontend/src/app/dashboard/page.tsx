@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { GPUMarketShareChart } from '@/components/charts/GPUMarketShareChart'
 import { PricePerformanceChart } from '@/components/charts/PricePerformanceChart'
+import { AvailabilityMetricsChart } from '@/components/charts/AvailabilityMetricsChart'
+import { GeographicDistributionChart } from '@/components/charts/GeographicDistributionChart'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { GPUMarketStat, MarketplaceOffer, GPUProvider, APIResponse } from '@/lib/types'
 
