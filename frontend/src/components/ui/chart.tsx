@@ -258,7 +258,7 @@ const ChartTooltipContent = React.forwardRef<
                   key={item.dataKey}
                   className={cn(
                     "flex w-full items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
-                    indicator === "dot" && "items-center"
+                    indicator === "dot" ? "items-center" : ""
                   )}
                 >
                   <div
