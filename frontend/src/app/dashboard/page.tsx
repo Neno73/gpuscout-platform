@@ -5,7 +5,10 @@ import { GPUMarketShareChart } from '@/components/charts/GPUMarketShareChart'
 import { PricePerformanceChart } from '@/components/charts/PricePerformanceChart'
 import { AvailabilityMetricsChart } from '@/components/charts/AvailabilityMetricsChart'
 import { GeographicDistributionChart } from '@/components/charts/GeographicDistributionChart'
+import { DataCollectionHistogram } from '@/components/charts/DataCollectionHistogram'
+import { DataCollectionStatus } from '@/components/DataCollectionStatus'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { GPUMarketStat, MarketplaceOffer, GPUProvider, AvailabilityMetric, APIResponse } from '@/lib/types'
 
 
@@ -34,10 +37,11 @@ export default function DashboardPage() {
     setLoading(true)
     try {
       // Fetch from actual Cloudflare Workers API endpoints  
+      const API_BASE = 'https://gpuscout-platform.nenad-a7c.workers.dev'
       const [gpuResponse, offerResponse, hostsResponse] = await Promise.all([
-        fetch('/api/market/gpu-stats').catch(() => null),
-        fetch('/api/market/offers').catch(() => null),
-        fetch('/api/market/hosts').catch(() => null)
+        fetch(`${API_BASE}/api/market/gpu-stats`).catch(() => null),
+        fetch(`${API_BASE}/api/market/offers`).catch(() => null),
+        fetch(`${API_BASE}/api/market/hosts`).catch(() => null)
       ])
 
       if (gpuResponse?.ok) {
@@ -83,23 +87,66 @@ export default function DashboardPage() {
 
       if (hostsResponse?.ok) {
         const hostsResult = await hostsResponse.json()
-        if (hostsResult.success && hostsResult.data && hostsResult.data.hosts) {
-          // Transform hosts data to our GPUProvider format
-          const transformedProviders = hostsResult.data.hosts.map((host: any) => ({
-            host_id: host.id || host.host_id,
-            host_name: host.name || `Host ${host.id}`,
-            country: host.location || 'Unknown',
-            region: host.region || 'unknown',
-            total_machines: host.num_gpus || 1,
-            total_tflops: host.total_flops || 0,
-            avg_dlperf_per_dollar: Math.round((host.dlperf || 0) / (host.price_per_hour || 1)),
-            verification_status: 'verified',
-            created_at: new Date().toISOString()
-          }))
-          setProviderData(transformedProviders)
-          
-          // Create availability metrics from provider data
-          const availabilityMetrics = transformedProviders.flatMap((provider: any) => [
+        if (hostsResult.success && hostsResult.data) {
+          // Check if we have hosts data
+          if (hostsResult.data.hosts && hostsResult.data.hosts.length > 0) {
+            // Transform hosts data to our GPUProvider format
+            const transformedProviders = hostsResult.data.hosts.map((host: any) => ({
+              host_id: host.host_id || host.id,
+              host_name: host.name || `Host ${host.host_id || host.id}`,
+              country: host.country || 'Unknown',
+              region: host.location || host.region || 'unknown',
+              total_machines: host.total_machines || host.num_gpus || 1,
+              total_tflops: host.total_tflops || host.total_flops || 0,
+              avg_dlperf_per_dollar: Math.round((host.dlperf || 0) / (host.price_per_hour || 1)),
+              verification_status: 'verified' as const,
+              created_at: new Date().toISOString()
+            }))
+            setProviderData(transformedProviders)
+          } else if (hostsResult.meta?.totalHosts === 0) {
+            // Fetch directly from 500.farm if database is empty
+            console.log('No hosts in database, fetching from 500.farm...')
+            const directResponse = await fetch('https://500.farm/vastai-exporter/hosts')
+            if (directResponse.ok) {
+              const directData = await directResponse.json()
+              if (directData.hosts && Array.isArray(directData.hosts)) {
+                // Take a sample of hosts with diverse countries
+                const countryMap = new Map()
+                directData.hosts.forEach((host: any) => {
+                  const country = host.location?.country || 'Unknown'
+                  if (!countryMap.has(country) || countryMap.get(country).length < 5) {
+                    if (!countryMap.has(country)) countryMap.set(country, [])
+                    countryMap.get(country).push(host)
+                  }
+                })
+                
+                // Create sample data from diverse countries
+                const sampleHosts: any[] = []
+                countryMap.forEach((hosts, country) => {
+                  sampleHosts.push(...hosts.slice(0, 5))
+                })
+                
+                const transformedProviders = sampleHosts.slice(0, 50).map((host: any) => ({
+                  host_id: host.host_id,
+                  host_name: `Host ${host.host_id}`,
+                  country: host.location?.country || 'Unknown',
+                  region: host.location?.location || 'unknown',
+                  total_machines: host.machine_ids?.length || 0,
+                  total_tflops: host.tflops || 0,
+                  avg_dlperf_per_dollar: 425,
+                  verification_status: 'verified' as const,
+                  created_at: new Date().toISOString()
+                }))
+                setProviderData(transformedProviders)
+              }
+            }
+          }
+        }
+      }
+      
+      // Create availability metrics from provider data
+      if (providerData.length > 0) {
+        const availabilityMetrics = providerData.flatMap((provider: any) => [
             {
               gpu_name: 'RTX 4090', // This would come from actual machine data
               count: Math.floor(provider.total_machines / 2),
@@ -115,8 +162,7 @@ export default function DashboardPage() {
               timestamp: new Date().toISOString()
             }
           ])
-          setAvailabilityData(availabilityMetrics)
-        }
+        setAvailabilityData(availabilityMetrics)
       }
 
       setLastUpdated(new Date())
@@ -146,6 +192,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-slate-900">Market Intelligence Dashboard</h1>
           <p className="text-slate-600 mt-1">
             Live GPU market data • Last updated: {lastUpdated.toLocaleTimeString()}
+            {loading && <Badge variant="secondary" className="ml-2">Refreshing...</Badge>}
           </p>
         </div>
         <button 
@@ -190,16 +237,32 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Main Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <GPUMarketShareChart data={gpuData} />
-        <PricePerformanceChart data={offerData} />
+      {/* Data Collection Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <DataCollectionHistogram />
+        </div>
+        <div>
+          <DataCollectionStatus />
+        </div>
       </div>
 
-      {/* Additional Charts */}
-      <div className="space-y-8">
-        <AvailabilityMetricsChart data={availabilityData} />
-        <GeographicDistributionChart data={providerData} />
+      {/* Market Overview Section */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold text-slate-900">Market Overview</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <GPUMarketShareChart data={gpuData} />
+          <PricePerformanceChart data={offerData} />
+        </div>
+      </div>
+
+      {/* Availability & Geographic Section */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold text-slate-900">Availability & Distribution</h2>
+        <div className="space-y-8">
+          <AvailabilityMetricsChart data={availabilityData} />
+          <GeographicDistributionChart data={providerData} />
+        </div>
       </div>
 
       {/* Additional Analytics Cards */}

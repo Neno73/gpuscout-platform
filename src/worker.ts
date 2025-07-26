@@ -8,6 +8,7 @@ import { marketDataHandler } from './api/marketDataRouter';
 import { rateLimitHandler } from './middleware/rateLimit';
 import { corsHandler } from './middleware/cors';
 import { handleScheduled, handleManualScheduled, getScheduledJobStatus } from './handlers/scheduledHandler';
+import { handleDiagnostics } from './api/diagnosticRouter';
 
 export interface Env {
   DB: D1Database;
@@ -53,6 +54,12 @@ export default {
     
     if (url.pathname === '/api/scheduled/status') {
       const response = await getScheduledJobStatus(env);
+      return corsHandler(request, response);
+    }
+    
+    // Diagnostic endpoints (temporary for debugging)
+    if (url.pathname.startsWith('/api/diagnostics/')) {
+      const response = await handleDiagnostics(request, env);
       return corsHandler(request, response);
     }
     

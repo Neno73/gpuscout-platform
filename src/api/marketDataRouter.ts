@@ -183,10 +183,19 @@ async function handleOffers(request: Request, env: Env): Promise<Response> {
   try {
     // First, try to get from our processed database
     let query = `
-      SELECT * FROM gpu_offers 
-      WHERE price_per_hour <= ? 
-      ${model ? 'AND model = ?' : ''}
-      ORDER BY price_per_hour ASC
+      SELECT 
+        machine_id as id,
+        gpu_name as model,
+        price_base_per_hour as price_per_hour,
+        rentable as availability,
+        country as location,
+        dlperf as performance_score,
+        vram_gb as memory_gb,
+        host_id
+      FROM gpu_marketplace_offers 
+      WHERE price_base_per_hour <= ? 
+      ${model ? 'AND gpu_name = ?' : ''}
+      ORDER BY price_base_per_hour ASC
       LIMIT ? OFFSET ?
     `;
     
@@ -285,19 +294,95 @@ async function handleMachines(request: Request, env: Env): Promise<Response> {
  */
 async function handleHosts(request: Request, env: Env): Promise<Response> {
   try {
+    // First check if we have any data in gpu_providers
+    const count = await env.DB.prepare('SELECT COUNT(*) as total FROM gpu_providers').first();
+    
+    if (!count || count.total === 0) {
+      // No data in database, fetch from 500.farm
+      try {
+        const response = await fetch(`${FIVEHUNDRED_FARM_BASE_URL}/hosts`);
+        if (!response.ok) {
+          throw new Error(`500.farm API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Import hosts into database for future use
+        if (data.hosts && Array.isArray(data.hosts)) {
+          const dataService = new UnifiedDataCollectionService(env);
+          await dataService.collectMarketData(true); // Force collection
+        }
+        
+        // Transform and return limited data for now
+        const hosts = data.hosts?.slice(0, 100).map(host => ({
+          host_id: host.host_id,
+          country: host.location?.country || 'Unknown',
+          location: host.location?.location || 'Unknown',
+          total_machines: host.machine_ids?.length || 0,
+          total_tflops: host.tflops || 0,
+          latitude: host.location?.lat || null,
+          longitude: host.location?.long || null,
+          isp: host.location?.isp || null
+        })) || [];
+        
+        return Response.json({
+          success: true,
+          data: { hosts },
+          meta: {
+            timestamp: new Date().toISOString(),
+            dataSource: '500.farm-direct',
+            cached: false,
+            totalHosts: data.hosts?.length || 0
+          }
+        });
+      } catch (fetchError) {
+        console.error('Direct 500.farm fetch error:', fetchError);
+      }
+    }
+    
+    // Query from gpu_providers table
     const results = await env.DB.prepare(`
-      SELECT * FROM gpu_hosts 
-      ORDER BY last_seen DESC
+      SELECT 
+        host_id,
+        country,
+        location,
+        total_machines,
+        total_tflops,
+        latitude,
+        longitude,
+        isp,
+        data_timestamp
+      FROM gpu_providers 
+      WHERE country IS NOT NULL
+      ORDER BY total_tflops DESC
       LIMIT 100
+    `).all();
+
+    // Get country distribution
+    const countryStats = await env.DB.prepare(`
+      SELECT 
+        country,
+        COUNT(*) as host_count,
+        SUM(total_tflops) as total_tflops,
+        SUM(total_machines) as total_machines
+      FROM gpu_providers 
+      WHERE country IS NOT NULL
+      GROUP BY country
+      ORDER BY total_tflops DESC
+      LIMIT 20
     `).all();
 
     return Response.json({
       success: true,
-      data: { hosts: results.results || [] },
+      data: { 
+        hosts: results.results || [],
+        countryStats: countryStats.results || []
+      },
       meta: {
         timestamp: new Date().toISOString(),
         dataSource: 'cached-db',
-        cached: true
+        cached: true,
+        totalInDatabase: count?.total || 0
       }
     });
 
