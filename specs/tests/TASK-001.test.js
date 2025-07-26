@@ -87,20 +87,21 @@ describe('Password Strength Validation', () => {
 
 describe('JWT Token Management', () => {
   const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
-  const mockSecret = 'test-jwt-secret-key';
+  const mockEnv = { JWT_SECRET: 'test-jwt-secret-key' };
   
   test('generates valid access and refresh tokens', async () => {
-    const tokens = await generateTokens(mockUserId, mockSecret);
+    const tokens = await generateTokens(mockUserId, mockEnv);
     
     expect(tokens.accessToken).toBeDefined();
     expect(tokens.refreshToken).toBeDefined();
     expect(typeof tokens.accessToken).toBe('string');
     expect(typeof tokens.refreshToken).toBe('string');
+    expect(tokens.expiresIn).toBe(3600); // 1 hour in seconds
   });
   
   test('access token expires in 1 hour', async () => {
-    const tokens = await generateTokens(mockUserId, mockSecret);
-    const payload = await verifyToken(tokens.accessToken, mockSecret);
+    const tokens = await generateTokens(mockUserId, mockEnv);
+    const payload = await verifyToken(tokens.accessToken, mockEnv);
     
     const issuedAt = payload.iat * 1000;
     const expiresAt = payload.exp * 1000;
@@ -110,8 +111,8 @@ describe('JWT Token Management', () => {
   });
   
   test('refresh token expires in 7 days', async () => {
-    const tokens = await generateTokens(mockUserId, mockSecret);
-    const payload = await verifyToken(tokens.refreshToken, mockSecret);
+    const tokens = await generateTokens(mockUserId, mockEnv);
+    const payload = await verifyToken(tokens.refreshToken, mockEnv);
     
     const issuedAt = payload.iat * 1000;
     const expiresAt = payload.exp * 1000;
@@ -121,21 +122,21 @@ describe('JWT Token Management', () => {
   });
   
   test('rejects invalid tokens', async () => {
-    await expect(verifyToken('invalid-token', mockSecret))
+    await expect(verifyToken('invalid-token', mockEnv))
       .rejects.toThrow('Invalid token');
   });
   
   test('rejects expired tokens', async () => {
-    // Create token with very short expiry
+    // Create token with very short expiry (1 second)
     const expiredToken = await new SignJWT({ userId: mockUserId })
       .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('1ms')
-      .sign(new TextEncoder().encode(mockSecret));
+      .setExpirationTime('1s')
+      .sign(new TextEncoder().encode(mockEnv.JWT_SECRET));
     
     // Wait for token to expire
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise(resolve => setTimeout(resolve, 1100));
     
-    await expect(verifyToken(expiredToken, mockSecret))
+    await expect(verifyToken(expiredToken, mockEnv))
       .rejects.toThrow();
   });
 });
