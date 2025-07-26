@@ -420,3 +420,24 @@ Tests:       11 failed, 4 passed, 15 total
 Snapshots:   0 total
 Time:        1.965 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
+Task TASK-001 failed 5 times. Last error:
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      147 |     expect(hash).toBeDefined();
+      148 |     expect(hash).not.toBe(password);
+    > 149 |     expect(hash.startsWith('$2b$12$')).toBe(true); // bcrypt with 12 rounds
+          |                                        ^
+      150 |   });
+      151 |   
+      152 |   test('verifies correct passwords', async () => {
+
+      at Object.toBe (specs/tests/TASK-001.test.js:149:40)
+
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 8 passed, 15 total
+Snapshots:   0 total
+Time:        2.926 s
+Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
