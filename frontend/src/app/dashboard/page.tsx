@@ -6,7 +6,7 @@ import { PricePerformanceChart } from '@/components/charts/PricePerformanceChart
 import { AvailabilityMetricsChart } from '@/components/charts/AvailabilityMetricsChart'
 import { GeographicDistributionChart } from '@/components/charts/GeographicDistributionChart'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { GPUMarketStat, MarketplaceOffer, GPUProvider, APIResponse } from '@/lib/types'
+import { GPUMarketStat, MarketplaceOffer, GPUProvider, AvailabilityMetric, APIResponse } from '@/lib/types'
 
 // Mock data based on our test results for initial display
 const mockGPUData: GPUMarketStat[] = [
