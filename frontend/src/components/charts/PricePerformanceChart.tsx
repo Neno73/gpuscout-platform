@@ -92,7 +92,7 @@ export function PricePerformanceChart({
               y={400} 
               stroke="hsl(var(--muted-foreground))" 
               strokeDasharray="5 5"
-              label={{ value: "Good Value Threshold", position: "topLeft" }}
+              label={{ value: "Good Value Threshold", position: "top" }}
             />
             
             <ChartTooltip
