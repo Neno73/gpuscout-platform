@@ -92,13 +92,9 @@ export function GPUMarketShareChart({
                       payload={[
                         {
                           name: data.model,
-                          value: data.count,
+                          value: `${data.count} units (${data.percentage}%)`,
                           color: chartConfig[data.model as keyof typeof chartConfig]?.color
                         }
-                      ]}
-                      formatter={(value, name) => [
-                        `${value} units (${data.percentage}%)`,
-                        name
                       ]}
                     />
                   )
