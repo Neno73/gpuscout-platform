@@ -109,16 +109,7 @@ export function PricePerformanceChart({
                           color: data.verified ? chartConfig.verified.color : chartConfig.unverified.color
                         }
                       ]}
-                      formatter={() => [
-                        <div key="tooltip" className="grid gap-1">
-                          <div>Model: {data.model}</div>
-                          <div>Price: ${data.price}/hr</div>
-                          <div>DLPERF: {data.dlperf}</div>
-                          <div>Value: {data.performance.toFixed(1)} DLPERF/$</div>
-                          <div>Status: {data.verified ? 'Verified' : 'Unverified'}</div>
-                        </div>,
-                        ""
-                      ]}
+                      label={`${data.model} - $${data.price}/hr`}
                     />
                   )
                 }
