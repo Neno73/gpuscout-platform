@@ -5,7 +5,7 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  // Static export for Cloudflare Pages
+  // Static export for Cloudflare Pages - dynamicParams false to allow runtime routing
   output: 'export',
   distDir: 'out'
 }
