@@ -405,32 +405,89 @@ async function handleHistoricalData(request: Request, env: Env): Promise<Respons
 
 /**
  * Store GPU stats snapshot for historical analysis
+ * Updated to handle real 500.farm data structure
  */
 async function storeGPUStatsSnapshot(data: any, env: Env): Promise<void> {
   try {
     const timestamp = new Date().toISOString();
+    const dataTimestamp = data.timestamp || timestamp;
+    
+    // Data structure: { models: [array of models], timestamp, url, note }
+    if (!data.models || !Array.isArray(data.models)) {
+      console.error('Invalid data structure: missing models array');
+      return;
+    }
     
     // Store each GPU model's stats
-    for (const [model, stats] of Object.entries(data as Record<string, any>)) {
-      if (typeof stats === 'object' && stats !== null) {
-        await env.DB.prepare(`
-          INSERT INTO gpu_stats_history 
-          (model, rental_count, median_price, percentile_25, percentile_75, 
-           percentile_90, min_price, max_price, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(
-          model,
-          stats.rental_count || 0,
-          stats.median_price || 0,
-          stats.percentile_25 || 0,
-          stats.percentile_75 || 0,
-          stats.percentile_90 || 0,
-          stats.min_price || 0,
-          stats.max_price || 0,
-          timestamp
-        ).run();
+    for (const modelData of data.models) {
+      if (!modelData.name || !modelData.stats) {
+        console.warn('Skipping model with missing name or stats:', modelData);
+        continue;
       }
+
+      const model = modelData.name;
+      const stats = modelData.stats;
+      const info = modelData.info || {};
+
+      // Helper function to extract stats from nested structure
+      const getStats = (category: any, type: string) => {
+        if (!category || !category[type] || !Array.isArray(category[type]) || category[type].length === 0) {
+          return { count: 0, price_median: 0, price_10th_percentile: 0, price_90th_percentile: 0 };
+        }
+        return category[type][0]; // First (and typically only) element in array
+      };
+
+      // Extract all statistics
+      const rentedVerified = getStats(stats.rented, 'verified');
+      const rentedUnverified = getStats(stats.rented, 'unverified');
+      const rentedAll = getStats(stats.rented, 'all');
+      
+      const availableVerified = getStats(stats.available, 'verified');
+      const availableUnverified = getStats(stats.available, 'unverified');
+      const availableAll = getStats(stats.available, 'all');
+      
+      const totalVerified = getStats(stats.all, 'verified');
+      const totalUnverified = getStats(stats.all, 'unverified');
+      const totalAll = getStats(stats.all, 'all');
+
+      await env.DB.prepare(`
+        INSERT INTO gpu_stats_history 
+        (model, 
+         rented_verified_count, rented_verified_median, rented_verified_p10, rented_verified_p90,
+         rented_unverified_count, rented_unverified_median, rented_unverified_p10, rented_unverified_p90,
+         rented_all_count, rented_all_median, rented_all_p10, rented_all_p90,
+         available_verified_count, available_verified_median, available_verified_p10, available_verified_p90,
+         available_unverified_count, available_unverified_median, available_unverified_p10, available_unverified_p90,
+         available_all_count, available_all_median, available_all_p10, available_all_p90,
+         total_verified_count, total_verified_median, total_verified_p10, total_verified_p90,
+         total_unverified_count, total_unverified_median, total_unverified_p10, total_unverified_p90,
+         total_all_count, total_all_median, total_all_p10, total_all_p90,
+         vram_gb, dlperf, tflops, data_timestamp, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        model,
+        // Rented stats
+        rentedVerified.count || 0, rentedVerified.price_median || 0, rentedVerified.price_10th_percentile || 0, rentedVerified.price_90th_percentile || 0,
+        rentedUnverified.count || 0, rentedUnverified.price_median || 0, rentedUnverified.price_10th_percentile || 0, rentedUnverified.price_90th_percentile || 0,
+        rentedAll.count || 0, rentedAll.price_median || 0, rentedAll.price_10th_percentile || 0, rentedAll.price_90th_percentile || 0,
+        // Available stats
+        availableVerified.count || 0, availableVerified.price_median || 0, availableVerified.price_10th_percentile || 0, availableVerified.price_90th_percentile || 0,
+        availableUnverified.count || 0, availableUnverified.price_median || 0, availableUnverified.price_10th_percentile || 0, availableUnverified.price_90th_percentile || 0,
+        availableAll.count || 0, availableAll.price_median || 0, availableAll.price_10th_percentile || 0, availableAll.price_90th_percentile || 0,
+        // Total stats
+        totalVerified.count || 0, totalVerified.price_median || 0, totalVerified.price_10th_percentile || 0, totalVerified.price_90th_percentile || 0,
+        totalUnverified.count || 0, totalUnverified.price_median || 0, totalUnverified.price_10th_percentile || 0, totalUnverified.price_90th_percentile || 0,
+        totalAll.count || 0, totalAll.price_median || 0, totalAll.price_10th_percentile || 0, totalAll.price_90th_percentile || 0,
+        // GPU info
+        info.vram || 0,
+        info.dlperf || 0,
+        info.tflops || 0,
+        dataTimestamp,
+        timestamp
+      ).run();
     }
+    
+    console.log(`Stored GPU stats snapshot for ${data.models.length} models`);
   } catch (error) {
     console.error('Failed to store GPU stats snapshot:', error);
     // Don't throw - we don't want to fail the main request
