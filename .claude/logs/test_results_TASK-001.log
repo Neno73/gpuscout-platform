@@ -4,41 +4,24 @@
 
 FAIL specs/tests/TASK-001.test.js
   Email Validation
-    ✓ accepts valid email formats (3 ms)
+    ✓ accepts valid email formats (5 ms)
     ✓ rejects invalid email formats (2 ms)
-    ✕ handles edge cases (2 ms)
+    ✓ handles edge cases (1 ms)
   Password Strength Validation
-    ✓ accepts strong passwords (1 ms)
-    ✓ rejects weak passwords (2 ms)
-    ✕ provides helpful feedback messages (1 ms)
+    ✓ accepts strong passwords (2 ms)
+    ✓ rejects weak passwords (5 ms)
+    ✕ provides helpful feedback messages (4 ms)
   JWT Token Management
-    ✕ generates valid access and refresh tokens (1 ms)
+    ✕ generates valid access and refresh tokens (2 ms)
     ✕ access token expires in 1 hour (1 ms)
-    ✕ refresh token expires in 7 days (1 ms)
-    ✓ rejects invalid tokens (5 ms)
+    ✕ refresh token expires in 7 days
+    ✓ rejects invalid tokens (2 ms)
     ✕ rejects expired tokens
   Password Hashing
-    ✕ hashes passwords with bcrypt (328 ms)
-    ✓ verifies correct passwords (615 ms)
-    ✓ rejects incorrect passwords (604 ms)
-    ✓ uses 12 salt rounds for security (313 ms)
-
-  ● Email Validation › handles edge cases
-
-    expect(received).toBe(expected) // Object.is equality
-
-    Expected: false
-    Received: true
-
-      40 |     expect(validateEmail(null)).toBe(false);
-      41 |     expect(validateEmail(undefined)).toBe(false);
-    > 42 |     expect(validateEmail('a'.repeat(255) + '@example.com')).toBe(false); // Too long
-         |                                                             ^
-      43 |   });
-      44 | });
-      45 |
-
-      at Object.toBe (specs/tests/TASK-001.test.js:42:61)
+    ✕ hashes passwords with bcrypt (346 ms)
+    ✓ verifies correct passwords (612 ms)
+    ✓ rejects incorrect passwords (608 ms)
+    ✓ uses 12 salt rounds for security (311 ms)
 
   ● Password Strength Validation › provides helpful feedback messages
 
@@ -47,15 +30,15 @@ FAIL specs/tests/TASK-001.test.js
     Expected value: "at least 8 characters"
     Received array: ["Password must be at least 8 characters long", "Password must contain at least one uppercase letter", "Password must contain at least one number", "Password must contain at least one special character (@$!%*?&)"]
 
-      78 |   test('provides helpful feedback messages', () => {
-      79 |     const result = validatePasswordStrength('weak');
-    > 80 |     expect(result.feedback).toContain('at least 8 characters');
+      79 |   test('provides helpful feedback messages', () => {
+      80 |     const result = validatePasswordStrength('weak');
+    > 81 |     expect(result.feedback).toContain('at least 8 characters');
          |                             ^
-      81 |     expect(result.feedback).toContain('uppercase letter');
-      82 |     expect(result.feedback).toContain('number');
-      83 |     expect(result.feedback).toContain('special character');
+      82 |     expect(result.feedback).toContain('uppercase letter');
+      83 |     expect(result.feedback).toContain('number');
+      84 |     expect(result.feedback).toContain('special character');
 
-      at Object.toContain (specs/tests/TASK-001.test.js:80:29)
+      at Object.toContain (specs/tests/TASK-001.test.js:81:29)
 
   ● JWT Token Management › generates valid access and refresh tokens
 
@@ -73,7 +56,7 @@ FAIL specs/tests/TASK-001.test.js
       at new CompactSign (node_modules/jose/dist/browser/jws/compact/sign.js:4:27)
       at SignJWT.sign (node_modules/jose/dist/browser/jwt/sign.js:11:21)
       at sign (src/utils/jwt.js:17:6)
-      at Object.<anonymous> (specs/tests/TASK-001.test.js:92:40)
+      at Object.<anonymous> (specs/tests/TASK-001.test.js:93:40)
 
   ● JWT Token Management › access token expires in 1 hour
 
@@ -91,7 +74,7 @@ FAIL specs/tests/TASK-001.test.js
       at new CompactSign (node_modules/jose/dist/browser/jws/compact/sign.js:4:27)
       at SignJWT.sign (node_modules/jose/dist/browser/jwt/sign.js:11:21)
       at sign (src/utils/jwt.js:17:6)
-      at Object.<anonymous> (specs/tests/TASK-001.test.js:101:40)
+      at Object.<anonymous> (specs/tests/TASK-001.test.js:102:40)
 
   ● JWT Token Management › refresh token expires in 7 days
 
@@ -109,23 +92,23 @@ FAIL specs/tests/TASK-001.test.js
       at new CompactSign (node_modules/jose/dist/browser/jws/compact/sign.js:4:27)
       at SignJWT.sign (node_modules/jose/dist/browser/jwt/sign.js:11:21)
       at sign (src/utils/jwt.js:17:6)
-      at Object.<anonymous> (specs/tests/TASK-001.test.js:112:40)
+      at Object.<anonymous> (specs/tests/TASK-001.test.js:113:40)
 
   ● JWT Token Management › rejects expired tokens
 
     TypeError: Invalid time period format
 
-      129 |     const expiredToken = await new SignJWT({ userId: mockUserId })
-      130 |       .setProtectedHeader({ alg: 'HS256' })
-    > 131 |       .setExpirationTime('1ms')
+      130 |     const expiredToken = await new SignJWT({ userId: mockUserId })
+      131 |       .setProtectedHeader({ alg: 'HS256' })
+    > 132 |       .setExpirationTime('1ms')
           |        ^
-      132 |       .sign(new TextEncoder().encode(mockSecret));
-      133 |     
-      134 |     // Wait for token to expire
+      133 |       .sign(new TextEncoder().encode(mockSecret));
+      134 |     
+      135 |     // Wait for token to expire
 
       at _default (node_modules/jose/dist/browser/lib/secs.js:10:15)
       at SignJWT.setExpirationTime (node_modules/jose/dist/browser/jwt/produce.js:53:78)
-      at Object.setExpirationTime (specs/tests/TASK-001.test.js:131:8)
+      at Object.setExpirationTime (specs/tests/TASK-001.test.js:132:8)
 
   ● Password Hashing › hashes passwords with bcrypt
 
@@ -134,18 +117,18 @@ FAIL specs/tests/TASK-001.test.js
     Expected: true
     Received: false
 
-      147 |     expect(hash).toBeDefined();
-      148 |     expect(hash).not.toBe(password);
-    > 149 |     expect(hash.startsWith('$2b$12$')).toBe(true); // bcrypt with 12 rounds
+      148 |     expect(hash).toBeDefined();
+      149 |     expect(hash).not.toBe(password);
+    > 150 |     expect(hash.startsWith('$2b$12$')).toBe(true); // bcrypt with 12 rounds
           |                                        ^
-      150 |   });
-      151 |   
-      152 |   test('verifies correct passwords', async () => {
+      151 |   });
+      152 |   
+      153 |   test('verifies correct passwords', async () => {
 
-      at Object.toBe (specs/tests/TASK-001.test.js:149:40)
+      at Object.toBe (specs/tests/TASK-001.test.js:150:40)
 
 Test Suites: 1 failed, 1 total
-Tests:       7 failed, 8 passed, 15 total
+Tests:       6 failed, 9 passed, 15 total
 Snapshots:   0 total
-Time:        2.926 s
+Time:        2.877 s, estimated 3 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.

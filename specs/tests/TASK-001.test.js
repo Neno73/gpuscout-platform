@@ -78,10 +78,10 @@ describe('Password Strength Validation', () => {
   
   test('provides helpful feedback messages', () => {
     const result = validatePasswordStrength('weak');
-    expect(result.feedback).toContain('at least 8 characters');
-    expect(result.feedback).toContain('uppercase letter');
-    expect(result.feedback).toContain('number');
-    expect(result.feedback).toContain('special character');
+    expect(result.feedback).toContain('Password must be at least 8 characters long');
+    expect(result.feedback).toContain('Password must contain at least one uppercase letter');
+    expect(result.feedback).toContain('Password must contain at least one number');
+    expect(result.feedback).toContain('Password must contain at least one special character (@$!%*?&)');
   });
 });
 
