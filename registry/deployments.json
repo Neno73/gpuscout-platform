@@ -1,0 +1,17 @@
+{
+  "deployments": [],
+  "lastUpdated": "2025-01-25T10:30:00Z",
+  "version": "1.0.0",
+  "totalDeployments": 0,
+  "byEnvironment": {
+    "development": 0,
+    "staging": 0,
+    "production": 0
+  },
+  "byService": {},
+  "metadata": {
+    "description": "Registry of all deployment configurations in the GPUScout platform",
+    "maintainer": "Claude Code AI",
+    "updateTrigger": "Automated via hooks on deployment config changes"
+  }
+}

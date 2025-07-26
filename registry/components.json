@@ -1,0 +1,84 @@
+{
+  "components": [
+    {
+      "name": "RegistrationForm",
+      "path": "src/components/RegistrationForm.tsx",
+      "type": "form",
+      "feature": "authentication",
+      "description": "User registration form with validation and GDPR compliance",
+      "props": {
+        "onSuccess": "function - Callback for successful registration",
+        "onError": "function - Callback for registration errors", 
+        "initialEmail": "string - Pre-populated email address",
+        "showGdprConsent": "boolean - Whether to show GDPR consent checkbox"
+      },
+      "dependencies": ["useState", "useTransition", "useRouter"],
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "name": "LoginForm",
+      "path": "src/components/LoginForm.tsx",
+      "type": "form", 
+      "feature": "authentication",
+      "description": "User authentication form with Remember Me option",
+      "props": {
+        "onSuccess": "function - Callback for successful login",
+        "onError": "function - Callback for login errors",
+        "onForgotPassword": "function - Callback for forgot password action",
+        "redirectAfterLogin": "string - URL to redirect after successful login"
+      },
+      "dependencies": ["useState", "useTransition", "useRouter"],
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "name": "EmailVerificationBanner",
+      "path": "src/components/EmailVerificationBanner.tsx",
+      "type": "ui",
+      "feature": "authentication", 
+      "description": "Persistent reminder banner for unverified users",
+      "props": {
+        "user": "User - User object with verification status",
+        "onResendVerification": "function - Callback to resend verification email",
+        "onDismiss": "function - Optional callback when banner is dismissed"
+      },
+      "dependencies": ["useState", "useEffect"],
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "name": "PasswordStrengthIndicator", 
+      "path": "src/components/RegistrationForm.tsx",
+      "type": "util",
+      "feature": "authentication",
+      "description": "Password strength indicator with visual feedback",
+      "props": {
+        "password": "string - Password to analyze"
+      },
+      "dependencies": [],
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    }
+  ],
+  "lastUpdated": "2025-01-26T10:30:00Z",
+  "version": "1.0.0",
+  "totalComponents": 4,
+  "byType": {
+    "page": 0,
+    "layout": 0,
+    "ui": 1,
+    "form": 2,
+    "chart": 0,
+    "modal": 0,
+    "util": 1
+  },
+  "byFeature": {
+    "authentication": 4
+  },
+  "metadata": {
+    "description": "Registry of all React components in the GPUScout platform",
+    "maintainer": "Claude Code AI",
+    "updateTrigger": "Automated via hooks on component creation/modification"
+  }
+}

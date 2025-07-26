@@ -1,0 +1,88 @@
+{
+  "endpoints": [
+    {
+      "path": "/api/auth/register",
+      "method": "POST",
+      "handler": "src/api/auth.js",
+      "function": "handleRegistration",
+      "description": "User registration with email verification",
+      "authentication": "None required",
+      "rateLimit": "3 requests per minute per IP",
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "path": "/api/auth/verify-email",
+      "method": "POST",
+      "handler": "src/api/auth.js",
+      "function": "handleEmailVerification",
+      "description": "Email verification with secure token",
+      "authentication": "None required",
+      "rateLimit": "5 requests per hour per email",
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "handler": "src/api/auth.js",
+      "function": "handleLogin",
+      "description": "User authentication with JWT tokens",
+      "authentication": "None required",
+      "rateLimit": "5 requests per 5 minutes per IP",
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "handler": "src/api/auth.js",
+      "function": "handleRefresh",
+      "description": "Refresh JWT access token",
+      "authentication": "Refresh token required",
+      "rateLimit": "None",
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "path": "/api/auth/forgot-password",
+      "method": "POST",
+      "handler": "src/api/auth.js",
+      "function": "handleForgotPassword",
+      "description": "Password reset request",
+      "authentication": "None required",
+      "rateLimit": "3 requests per hour per IP",
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "path": "/api/auth/reset-password",
+      "method": "POST",
+      "handler": "src/api/auth.js",
+      "function": "handleResetPassword",
+      "description": "Complete password reset with token",
+      "authentication": "None required",
+      "rateLimit": "None",
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    }
+  ],
+  "lastUpdated": "2025-01-26T10:30:00Z",
+  "version": "1.0.0",
+  "totalEndpoints": 6,
+  "byMethod": {
+    "GET": 0,
+    "POST": 6,
+    "PUT": 0,
+    "DELETE": 0,
+    "PATCH": 0
+  },
+  "byFeature": {
+    "authentication": 6
+  },
+  "metadata": {
+    "description": "Registry of all API endpoints in the GPUScout platform",
+    "maintainer": "Claude Code AI",
+    "updateTrigger": "Automated via hooks on file creation/modification"
+  }
+}

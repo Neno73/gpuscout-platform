@@ -1,0 +1,35 @@
+name = "gpuscout-platform"
+main = "src/index.js"
+compatibility_date = "2024-01-20"
+compatibility_flags = ["nodejs_compat"]
+
+[env.development]
+name = "gpuscout-platform-dev"
+
+[env.staging]
+name = "gpuscout-platform-staging"
+
+[env.production]
+name = "gpuscout-platform"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "gpuscout-db"
+database_id = "your-d1-database-id"
+
+# KV for rate limiting and sessions
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-namespace-id"
+
+# Environment variables
+[vars]
+APP_URL = "https://gpuscout.ai"
+JWT_EXPIRES_IN = "1h"
+REFRESH_TOKEN_EXPIRES_IN = "7d"
+
+# Secrets (set via wrangler secret put)
+# JWT_SECRET
+# SENDGRID_API_KEY
+# DISCORD_WEBHOOK_URL

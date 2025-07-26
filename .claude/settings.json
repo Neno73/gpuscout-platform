@@ -1,0 +1,71 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [ ! -f .claude/state/current_task.txt ]; then echo \"ERROR: No active task. Run /task:select first\"; exit 1; fi; echo \"=== CURRENT TASK ===\"; cat .claude/state/current_task.txt; echo \"\\n=== PROJECT CONTEXT ===\"; cat .claude/cheatsheet.md 2>/dev/null | head -1000; echo \"\\n=== FEATURE SPECS ===\"; cat specs/features/$(cat .claude/state/current_task.txt).md 2>/dev/null | head -2000'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'task=$(cat .claude/state/current_task.txt 2>/dev/null); if [ -z \"$task\" ]; then exit 0; fi; if [ ! -f specs/tests/${task}.test.md ]; then echo \"ERROR: No tests found for $task. Tests must be written first!\"; exit 1; fi; echo \"=== TEST VERIFICATION ===\"; stored_hash=$(cat .claude/state/test_hashes/${task}.sha256 2>/dev/null); current_hash=$(sha256sum specs/tests/${task}.test.md | cut -d\" \" -f1); if [ \"$stored_hash\" != \"$current_hash\" ] && [ -n \"$stored_hash\" ]; then echo \"ERROR: Test file has been modified! Tests are immutable.\"; exit 1; fi'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"=== DEPENDENCY CHECK ===\"; if grep -q \"mcp_tools:\" specs/features/$(cat .claude/state/current_task.txt 2>/dev/null).md 2>/dev/null; then echo \"⚠️  This task requires MCP tools. If any tool fails, STOP and notify user.\"; echo \"DO NOT skip or work around missing tools!\"; fi'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"[$(date +\"%Y-%m-%d %H:%M:%S\")] Command: $TOOL_INPUT\" >> .claude/logs/commands.log'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"npm test\" && [ -f .claude/state/performance_baseline.json ]; then echo \"=== PERFORMANCE CHECK ===\"; echo \"Baseline exists. Tests will verify performance does not degrade.\"; fi'"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"[$(date +\"%Y-%m-%d %H:%M:%S\")] Sub-agent spawned for: $TOOL_INPUT\" >> .claude/logs/subagent.log'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'task=$(cat .claude/state/current_task.txt 2>/dev/null); if [ -z \"$task\" ]; then exit 0; fi; echo \"=== RUNNING TESTS ===\"; npm test -- specs/tests/${task}.test.js 2>&1 | tee .claude/logs/test_results_${task}.log; if [ ${PIPESTATUS[0]} -eq 0 ]; then echo \"✅ Tests passed!\"; echo \"0\" > .claude/state/failure_count_${task}.txt; else current_count=$(cat .claude/state/failure_count_${task}.txt 2>/dev/null || echo 0); new_count=$((current_count + 1)); echo $new_count > .claude/state/failure_count_${task}.txt; echo \"❌ Tests failed (attempt $new_count/5)\"; if [ $new_count -ge 3 ] && [ $new_count -lt 5 ]; then echo \"\\n🔍 RESEARCHING DOCUMENTATION...\"; cat architecture/*.md specs/*.md | grep -i \"${task}\" -A 5 -B 5; fi; if [ $new_count -ge 5 ]; then echo \"\\n🛑 STOPPING: 5 failures reached. Human intervention required.\"; echo \"Task $task failed 5 times. Last error:\" >> .claude/logs/failures.log; tail -20 .claude/logs/test_results_${task}.log >> .claude/logs/failures.log; exit 1; fi; fi'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'git add -A && git commit -m \"WIP: $(cat .claude/state/current_task.txt 2>/dev/null || echo \"development\")\" --no-verify 2>/dev/null || true'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'task=$(cat .claude/state/current_task.txt 2>/dev/null); if [ -z \"$task\" ]; then exit 0; fi; if [ -f .claude/logs/test_results_${task}.log ] && grep -q \"✅ Tests passed!\" .claude/logs/test_results_${task}.log; then echo \"=== TASK COMPLETED SUCCESSFULLY ===\"; echo \"\\n📝 Updating registry...\"; node .claude/scripts/update-registry.js \"$task\"; echo \"\\n📚 Updating documentation...\"; node .claude/scripts/update-docs.js \"$task\"; echo \"\\n🧠 Updating memory...\"; echo \"Task: $task\\nStatus: Completed\\nDate: $(date)\\nImplementation: Success\" | node .claude/scripts/update-memory.js; echo \"\\n✅ Task $task completed! Marking as done...\"; sed -i \"s/\\[ \\] TASK-.*${task}/[x] TASK-.*${task}/g\" specs/spec.md; git add -A && git commit -m \"feat: Complete $task\" --no-verify; echo \"\\n🔄 Next task available:\"; grep -m 1 \"\\[ \\] TASK\" specs/spec.md || echo \"All tasks completed!\"; else echo \"\\n⚠️  Task $task not complete. Tests must pass before moving on.\"; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}

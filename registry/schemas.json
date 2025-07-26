@@ -1,0 +1,130 @@
+{
+  "schemas": [
+    {
+      "name": "users",
+      "type": "database",
+      "path": "migrations/0001_create_users_table.sql",
+      "feature": "authentication",
+      "description": "Users table for authentication system",
+      "fields": {
+        "id": "TEXT PRIMARY KEY",
+        "email": "TEXT UNIQUE NOT NULL",
+        "password_hash": "TEXT NOT NULL",
+        "name": "TEXT NOT NULL", 
+        "timezone": "TEXT NOT NULL",
+        "language": "TEXT DEFAULT 'en'",
+        "subscription_tier": "TEXT DEFAULT 'free'",
+        "email_verified": "BOOLEAN DEFAULT FALSE",
+        "verification_token": "TEXT",
+        "reset_token": "TEXT",
+        "reset_expires": "DATETIME",
+        "failed_login_attempts": "INTEGER DEFAULT 0",
+        "locked_until": "DATETIME",
+        "created_at": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+        "updated_at": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+        "last_login": "DATETIME"
+      },
+      "indexes": [
+        "idx_users_email",
+        "idx_users_verification_token", 
+        "idx_users_reset_token",
+        "idx_users_locked_until"
+      ],
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "name": "registrationSchema",
+      "type": "validation",
+      "path": "src/utils/validation.js",
+      "feature": "authentication",
+      "description": "Zod schema for user registration validation",
+      "fields": {
+        "email": "string().email()",
+        "password": "string().min(8).regex(passwordPattern)",
+        "name": "string().min(1).max(100)",
+        "timezone": "string().min(1)",
+        "language": "enum(['en', 'es', 'fr', 'de'])",
+        "gdprConsent": "boolean().refine(val => val === true)",
+        "subscriptionTier": "enum(['free', 'individual', 'professional', 'enterprise'])"
+      },
+      "added": "2025-01-26T10:30:00Z", 
+      "task": "TASK-001"
+    },
+    {
+      "name": "loginSchema",
+      "type": "validation",
+      "path": "src/utils/validation.js",
+      "feature": "authentication",
+      "description": "Zod schema for user login validation",
+      "fields": {
+        "email": "string().email()",
+        "password": "string().min(1)",
+        "rememberMe": "boolean().optional()"
+      },
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "name": "User",
+      "type": "typescript",
+      "path": "src/components/RegistrationForm.tsx",
+      "feature": "authentication",
+      "description": "TypeScript interface for User object",
+      "fields": {
+        "id": "string",
+        "email": "string",
+        "name": "string",
+        "emailVerified": "boolean",
+        "subscriptionTier": "string",
+        "createdAt": "string"
+      },
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "name": "AuthTokens", 
+      "type": "typescript",
+      "path": "src/components/LoginForm.tsx",
+      "feature": "authentication",
+      "description": "TypeScript interface for authentication tokens",
+      "fields": {
+        "accessToken": "string",
+        "refreshToken": "string", 
+        "expiresIn": "number"
+      },
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    },
+    {
+      "name": "ApiError",
+      "type": "typescript", 
+      "path": "src/components/RegistrationForm.tsx",
+      "feature": "authentication",
+      "description": "TypeScript interface for API error responses",
+      "fields": {
+        "message": "string",
+        "fieldErrors": "Array<{field: string, message: string}> | optional"
+      },
+      "added": "2025-01-26T10:30:00Z",
+      "task": "TASK-001"
+    }
+  ],
+  "lastUpdated": "2025-01-26T10:30:00Z",
+  "version": "1.0.0",
+  "totalSchemas": 6,
+  "byType": {
+    "database": 1,
+    "api": 0,
+    "validation": 2,
+    "typescript": 3
+  },
+  "byFeature": {
+    "authentication": 6
+  },
+  "metadata": {
+    "description": "Registry of all data schemas in the GPUScout platform",
+    "maintainer": "Claude Code AI",
+    "updateTrigger": "Automated via hooks on schema creation/modification"
+  }
+}
