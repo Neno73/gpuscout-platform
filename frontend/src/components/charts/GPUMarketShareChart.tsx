@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/simple-chart'
 import { GPUMarketStat } from '@/lib/types'
 
 interface GPUMarketShareChartProps {
