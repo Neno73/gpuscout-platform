@@ -38,6 +38,12 @@ export default {
       return corsHandler(request, response);
     }
     
+    // Route to market data endpoints
+    if (url.pathname.startsWith('/api/market/')) {
+      const response = await marketDataHandler(request, env);
+      return corsHandler(request, response);
+    }
+    
     // Health check endpoint
     if (url.pathname === '/health') {
       return new Response(JSON.stringify({
