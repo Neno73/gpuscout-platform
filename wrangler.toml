@@ -1,5 +1,5 @@
 name = "gpuscout-platform"
-main = "src/index.js"
+main = "src/worker.ts"
 compatibility_date = "2024-01-20"
 compatibility_flags = ["nodejs_compat"]
 
