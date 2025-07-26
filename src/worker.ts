@@ -4,6 +4,7 @@
  */
 
 import { authHandler } from './api/authRouter';
+import { marketDataHandler } from './api/marketDataRouter';
 import { rateLimitHandler } from './middleware/rateLimit';
 import { corsHandler } from './middleware/cors';
 
