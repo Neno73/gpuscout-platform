@@ -1,5 +1,6 @@
 {
-  "hooks": {
+  "hooks_disabled": {
+    "note": "Hooks disabled to reduce clutter - not being used for this project",
     "PreToolUse": [
       {
         "matcher": "Edit|MultiEdit|Write",
