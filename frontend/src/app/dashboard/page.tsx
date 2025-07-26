@@ -266,10 +266,12 @@ export default function DashboardPage() {
   const fetchMarketData = async () => {
     setLoading(true)
     try {
-      // Try to fetch from actual API endpoints
-      const [gpuResponse, offerResponse] = await Promise.all([
+      // Fetch from actual Cloudflare Workers API endpoints
+      const [gpuResponse, offerResponse, providerResponse, availabilityResponse] = await Promise.all([
         fetch('/api/market/gpu-stats').catch(() => null),
-        fetch('/api/market/offers').catch(() => null)
+        fetch('/api/market/offers').catch(() => null),
+        fetch('/api/market/providers').catch(() => null),
+        fetch('/api/market/availability').catch(() => null)
       ])
 
       if (gpuResponse?.ok) {
@@ -286,10 +288,24 @@ export default function DashboardPage() {
         }
       }
 
+      if (providerResponse?.ok) {
+        const providerResult: APIResponse<GPUProvider[]> = await providerResponse.json()
+        if (providerResult.success && providerResult.data.length > 0) {
+          setProviderData(providerResult.data)
+        }
+      }
+
+      if (availabilityResponse?.ok) {
+        const availabilityResult: APIResponse<AvailabilityMetric[]> = await availabilityResponse.json()
+        if (availabilityResult.success && availabilityResult.data.length > 0) {
+          setAvailabilityData(availabilityResult.data)
+        }
+      }
+
       setLastUpdated(new Date())
     } catch (error) {
-      console.warn('Failed to fetch live data, using mock data:', error)
-      // Keep using mock data on error
+      console.warn('Failed to fetch live data, using fallback data:', error)
+      // Keep using current data on error
     } finally {
       setLoading(false)
     }
