@@ -148,7 +148,7 @@ describe('Password Hashing', () => {
     
     expect(hash).toBeDefined();
     expect(hash).not.toBe(password);
-    expect(hash.startsWith('$2b$12$')).toBe(true); // bcrypt with 12 rounds
+    expect(hash.startsWith('$2a$12$')).toBe(true); // bcryptjs with 12 rounds
   });
   
   test('verifies correct passwords', async () => {
