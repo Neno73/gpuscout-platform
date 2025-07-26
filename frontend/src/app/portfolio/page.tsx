@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PortfolioCreateModal } from '@/components/dashboard/PortfolioCreateModal';
+import { PortfolioCreateModal } from '@/components/portfolio/PortfolioCreateModal';
 import { apiClient, Portfolio } from '@/lib/api';
 
 export default function PortfolioDashboardPage() {

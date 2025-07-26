@@ -1,7 +1,7 @@
 // A simple wrapper for fetch to handle common cases like base URL, headers, and error handling.
 // In a real app, this would be more robust, likely using a library like axios or tanstack-query.
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://gpuscout-platform.nenad-a7c.workers.dev/api';
 
 async function handleResponse<T>(response: Response): Promise<{ success: boolean; data?: T; error?: string }> {
   if (!response.ok) {
@@ -17,30 +17,45 @@ async function handleResponse<T>(response: Response): Promise<{ success: boolean
 
 export const apiClient = {
   get: async <T>(path: string): Promise<{ success: boolean; data?: T; error?: string }> => {
-    // This assumes a mechanism for attaching the auth token is in place,
-    // e.g., an interceptor or a context provider.
     const response = await fetch(`${API_BASE}${path}`, {
       headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': `Bearer ${getAuthToken()}`
       },
     });
     return handleResponse<T>(response);
   },
 
-  post: async <T>(path:string, body: any): Promise<{ success: boolean; data?: T; error?: string }> => {
+  post: async <T>(path: string, body: any): Promise<{ success: boolean; data?: T; error?: string }> => {
     const response = await fetch(`${API_BASE}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify(body),
     });
     return handleResponse<T>(response);
   },
-  
-  // ... other methods like put, delete
+
+  put: async <T>(path: string, body: any): Promise<{ success: boolean; data?: T; error?: string }> => {
+    const response = await fetch(`${API_BASE}${path}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    return handleResponse<T>(response);
+  },
+
+  delete: async <T>(path: string): Promise<{ success: boolean; data?: T; error?: string }> => {
+    const response = await fetch(`${API_BASE}${path}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return handleResponse<T>(response);
+  },
 };
 
 export interface Portfolio {
