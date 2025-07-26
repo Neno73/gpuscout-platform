@@ -1155,3 +1155,19 @@ ReferenceError: module is not defined
     at Module._load (node:internal/modules/cjs/loader:1096:12)
     at Module.require (node:internal/modules/cjs/loader:1298:19)
     at require (node:internal/modules/helpers:182:18)
+Task TASK-001-COMPLETED failed 5 times. Last error:
+
+> gpuscout-platform@1.0.0 test
+> jest specs/tests/TASK-001-COMPLETED.test.js
+
+ReferenceError: module is not defined
+    at file:///home/neno/Code/gpuscout-platform/jest.config.js:1:1
+    at ModuleJobSync.runSync (node:internal/modules/esm/module_job:387:35)
+    at ModuleLoader.importSyncForRequire (node:internal/modules/esm/loader:323:47)
+    at loadESMFromCJS (node:internal/modules/cjs/loader:1371:24)
+    at Module._compile (node:internal/modules/cjs/loader:1511:5)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1572:16)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
