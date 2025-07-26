@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_verification_token ON users(verification_token) WHERE verification_token IS NOT NULL;
-CREATE INDEX idx_users_reset_token ON users(reset_token) WHERE reset_token IS NOT NULL;
-CREATE INDEX idx_users_locked_until ON users(locked_until) WHERE locked_until IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token) WHERE verification_token IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token) WHERE reset_token IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_users_locked_until ON users(locked_until) WHERE locked_until IS NOT NULL;
