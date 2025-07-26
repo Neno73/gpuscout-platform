@@ -2,22 +2,6 @@
 > gpuscout-platform@1.0.0 test
 > jest specs/tests/TASK-001.test.js
 
-● Validation Warning:
-
-  Unknown option "moduleNameMapping" with value {"^@/(.*)$": "<rootDir>/src/$1"} was found.
-  This is probably a typing mistake. Fixing it will remove this message.
-
-  Configuration Documentation:
-  https://jestjs.io/docs/configuration
-
-● Validation Warning:
-
-  Unknown option "moduleNameMapping" with value {"^@/(.*)$": "<rootDir>/src/$1"} was found.
-  This is probably a typing mistake. Fixing it will remove this message.
-
-  Configuration Documentation:
-  https://jestjs.io/docs/configuration
-
 No tests found, exiting with code 1
 Run with `--passWithNoTests` to exit with code 0
 In /home/neno/Code/gpuscout-platform
