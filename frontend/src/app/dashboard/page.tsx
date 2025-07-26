@@ -7,6 +7,7 @@ import { AvailabilityMetricsChart } from '@/components/charts/AvailabilityMetric
 import { GeographicDistributionChart } from '@/components/charts/GeographicDistributionChart'
 import { DataCollectionHistogram } from '@/components/charts/DataCollectionHistogram'
 import { DataCollectionStatus } from '@/components/DataCollectionStatus'
+import { CountryFilter } from '@/components/CountryFilter'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { GPUMarketStat, MarketplaceOffer, GPUProvider, AvailabilityMetric, APIResponse } from '@/lib/types'
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [providerData, setProviderData] = useState<GPUProvider[]>([
     { host_id: 1, host_name: "CloudGPU US East", country: "United States", region: "us-east-1", total_machines: 450, total_tflops: 1620, avg_dlperf_per_dollar: 425, verification_status: 'verified', created_at: new Date().toISOString() }
   ])
+  const [filteredProviderData, setFilteredProviderData] = useState<GPUProvider[]>(providerData)
   const [availabilityData, setAvailabilityData] = useState<AvailabilityMetric[]>([
     { gpu_name: "RTX 4090", count: 85, rented: false, verified: true, timestamp: new Date().toISOString() },
     { gpu_name: "RTX 4090", count: 85, rented: true, verified: true, timestamp: new Date().toISOString() }
@@ -103,6 +105,7 @@ export default function DashboardPage() {
               created_at: new Date().toISOString()
             }))
             setProviderData(transformedProviders)
+            setFilteredProviderData(transformedProviders)
           } else if (hostsResult.meta?.totalHosts === 0) {
             // Fetch directly from 500.farm if database is empty
             console.log('No hosts in database, fetching from 500.farm...')
@@ -110,23 +113,30 @@ export default function DashboardPage() {
             if (directResponse.ok) {
               const directData = await directResponse.json()
               if (directData.hosts && Array.isArray(directData.hosts)) {
-                // Take a sample of hosts with diverse countries
-                const countryMap = new Map()
+                // Group all hosts by country for better geographic diversity
+                const countryGroups = new Map()
                 directData.hosts.forEach((host: any) => {
                   const country = host.location?.country || 'Unknown'
-                  if (!countryMap.has(country) || countryMap.get(country).length < 5) {
-                    if (!countryMap.has(country)) countryMap.set(country, [])
-                    countryMap.get(country).push(host)
+                  if (!countryGroups.has(country)) {
+                    countryGroups.set(country, [])
                   }
+                  countryGroups.get(country).push(host)
                 })
                 
-                // Create sample data from diverse countries
+                console.log(`Found ${countryGroups.size} countries:`, Array.from(countryGroups.keys()))
+                
+                // Take top hosts from each country (more diverse sampling)
                 const sampleHosts: any[] = []
-                countryMap.forEach((hosts, country) => {
-                  sampleHosts.push(...hosts.slice(0, 5))
+                countryGroups.forEach((hosts, country) => {
+                  // Sort by TFLOPS and take top hosts from each country
+                  const topHosts = hosts
+                    .sort((a: any, b: any) => (b.tflops || 0) - (a.tflops || 0))
+                    .slice(0, Math.min(10, Math.ceil(200 / countryGroups.size))) // Distribute 200 hosts across countries
+                  sampleHosts.push(...topHosts)
                 })
                 
-                const transformedProviders = sampleHosts.slice(0, 50).map((host: any) => ({
+                console.log(`Selected ${sampleHosts.length} hosts from ${countryGroups.size} countries`)
+                const transformedProviders = sampleHosts.map((host: any) => ({
                   host_id: host.host_id,
                   host_name: `Host ${host.host_id}`,
                   country: host.location?.country || 'Unknown',
@@ -138,6 +148,7 @@ export default function DashboardPage() {
                   created_at: new Date().toISOString()
                 }))
                 setProviderData(transformedProviders)
+                setFilteredProviderData(transformedProviders)
               }
             }
           }
@@ -259,10 +270,18 @@ export default function DashboardPage() {
       {/* Availability & Geographic Section */}
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-slate-900">Availability & Distribution</h2>
-        <div className="space-y-8">
-          <AvailabilityMetricsChart data={availabilityData} />
-          <GeographicDistributionChart data={providerData} />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1">
+            <CountryFilter 
+              data={providerData} 
+              onFilterChange={setFilteredProviderData} 
+            />
+          </div>
+          <div className="lg:col-span-3">
+            <GeographicDistributionChart data={filteredProviderData} />
+          </div>
         </div>
+        <AvailabilityMetricsChart data={availabilityData} />
       </div>
 
       {/* Additional Analytics Cards */}
