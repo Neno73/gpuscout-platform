@@ -5,77 +5,33 @@
 FAIL specs/tests/TASK-001.test.js
   ● Test suite failed to run
 
-    Cannot find module '@babel/preset-env'
-    Require stack:
-    - /home/neno/Code/gpuscout-platform/node_modules/@babel/core/lib/config/files/plugins.js
-    - /home/neno/Code/gpuscout-platform/node_modules/@babel/core/lib/config/files/index.js
-    - /home/neno/Code/gpuscout-platform/node_modules/@babel/core/lib/index.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest-snapshot/build/InlineSnapshots.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest-snapshot/build/State.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest-snapshot/build/index.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest-runtime/build/index.js
-    - /home/neno/Code/gpuscout-platform/node_modules/@jest/core/build/cli/index.js
-    - /home/neno/Code/gpuscout-platform/node_modules/@jest/core/build/index.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest-cli/build/run.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest-cli/build/index.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest-cli/bin/jest.js
-    - /home/neno/Code/gpuscout-platform/node_modules/jest/bin/jest.js
+    ReferenceError: TextEncoder is not defined
 
-    Make sure that all the Babel plugins and presets you are using
-    are defined as dependencies or devDependencies in your package.json
-    file. It's possible that the missing plugin is loaded by a preset
-    you are using that forgot to add the plugin to its dependencies: you
-    can workaround this problem by explicitly adding the missing package
-    to your top-level package.json.
+      4 |  */
+      5 |
+    > 6 | const request = require('supertest');
+        |                 ^
+      7 | const bcrypt = require('bcryptjs');
+      8 | const { SignJWT, jwtVerify } = require('jose');
+      9 | const crypto = require('crypto');
 
-      at tryRequireResolve (node_modules/@babel/core/src/config/files/plugins.ts:140:36)
-      at tryRequireResolve (node_modules/@babel/core/src/config/files/plugins.ts:168:19)
-      at resolveStandardizedNameForRequire (node_modules/@babel/core/src/config/files/plugins.ts:196:12)
-      at resolvePreset (node_modules/@babel/core/src/config/files/plugins.ts:50:32)
-          at loadPreset.next (<anonymous>)
-      at resolver (node_modules/@babel/core/src/config/config-descriptors.ts:326:35)
-          at createDescriptor.next (<anonymous>)
-      at evaluateSync (node_modules/gensync/index.js:251:28)
-      at node_modules/gensync/index.js:31:34
-          at Array.map (<anonymous>)
-      at Function.sync (node_modules/gensync/index.js:31:22)
-      at Function.all (node_modules/gensync/index.js:210:24)
-      at all (node_modules/@babel/core/src/config/config-descriptors.ts:267:38)
-          at createDescriptors.next (<anonymous>)
-      at createDescriptors (node_modules/@babel/core/src/config/config-descriptors.ts:243:17)
-          at createPresetDescriptors.next (<anonymous>)
-      at createPresetDescriptors (node_modules/@babel/core/src/config/config-descriptors.ts:155:36)
-      at Function.<anonymous> (node_modules/@babel/core/src/gensync-utils/async.ts:10:3)
-      at evaluateSync (node_modules/gensync/index.js:251:28)
-      at Function.sync (node_modules/gensync/index.js:89:14)
-      at sync (node_modules/@babel/core/src/gensync-utils/async.ts:83:25)
-      at sync (node_modules/gensync/index.js:182:19)
-      at onFirstPause (node_modules/gensync/index.js:210:24)
-      at cachedFunction (node_modules/@babel/core/src/config/caching.ts:131:34)
-          at cachedFunction.next (<anonymous>)
-      at presets (node_modules/@babel/core/src/config/config-chain.ts:725:34)
-          at mergeChainOpts.next (<anonymous>)
-      at mergeChainOpts (node_modules/@babel/core/src/config/config-chain.ts:661:14)
-          at chainWalker.next (<anonymous>)
-      at loadProgrammaticChain (node_modules/@babel/core/src/config/config-chain.ts:151:36)
-          at buildRootChain.next (<anonymous>)
-      at loadPrivatePartialConfig (node_modules/@babel/core/src/config/partial.ts:111:44)
-          at loadPrivatePartialConfig.next (<anonymous>)
-      at loadPrivatePartialConfig (node_modules/@babel/core/src/config/partial.ts:170:12)
-          at loadPartialConfig.next (<anonymous>)
-      at evaluateSync (node_modules/gensync/index.js:251:28)
-      at sync (node_modules/gensync/index.js:89:14)
-      at fn (node_modules/@babel/core/src/errors/rewrite-stack-trace.ts:99:14)
-      at loadPartialConfigSync (node_modules/@babel/core/src/config/index.ts:50:60)
-      at loadPartialConfigSync (node_modules/@babel/core/src/config/index.ts:69:14)
-      at ScriptTransformer._getCacheKey (node_modules/@jest/transform/build/ScriptTransformer.js:228:41)
-      at ScriptTransformer._getFileCachePath (node_modules/@jest/transform/build/ScriptTransformer.js:289:27)
-      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:525:32)
-      at ScriptTransformer._transformAndBuildScript (node_modules/@jest/transform/build/ScriptTransformer.js:674:40)
-      at ScriptTransformer.transform (node_modules/@jest/transform/build/ScriptTransformer.js:726:19)
+      at utf8ToBytes (node_modules/@noble/hashes/src/utils.ts:217:29)
+      at toBytes (node_modules/@noble/hashes/src/utils.ts:236:40)
+      at hashC (node_modules/@noble/hashes/src/utils.ts:342:63)
+      at hash (node_modules/@paralleldrive/cuid2/src/index.js:34:22)
+      at createFingerprint (node_modules/@paralleldrive/cuid2/src/index.js:63:10)
+      at init (node_modules/@paralleldrive/cuid2/src/index.js:81:17)
+      at Object.<anonymous> (node_modules/@paralleldrive/cuid2/src/index.js:101:18)
+      at Object.<anonymous> (node_modules/@paralleldrive/cuid2/index.js:1:152)
+      at Object.<anonymous> (node_modules/formidable/src/Formidable.js:8:15)
+      at Object.<anonymous> (node_modules/formidable/src/index.js:5:20)
+      at Object.require (node_modules/superagent/src/node/index.js:17:20)
+      at Object.<anonymous> (node_modules/supertest/lib/test.js:11:21)
+      at Object.<anonymous> (node_modules/supertest/index.js:14:14)
+      at Object.require (specs/tests/TASK-001.test.js:6:17)
 
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        0.566 s
+Time:        1.082 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.

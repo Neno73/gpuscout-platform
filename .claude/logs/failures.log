@@ -345,3 +345,24 @@ Tests:       0 total
 Snapshots:   0 total
 Time:        0.566 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
+Task TASK-001 failed 5 times. Last error:
+      at utf8ToBytes (node_modules/@noble/hashes/src/utils.ts:217:29)
+      at toBytes (node_modules/@noble/hashes/src/utils.ts:236:40)
+      at hashC (node_modules/@noble/hashes/src/utils.ts:342:63)
+      at hash (node_modules/@paralleldrive/cuid2/src/index.js:34:22)
+      at createFingerprint (node_modules/@paralleldrive/cuid2/src/index.js:63:10)
+      at init (node_modules/@paralleldrive/cuid2/src/index.js:81:17)
+      at Object.<anonymous> (node_modules/@paralleldrive/cuid2/src/index.js:101:18)
+      at Object.<anonymous> (node_modules/@paralleldrive/cuid2/index.js:1:152)
+      at Object.<anonymous> (node_modules/formidable/src/Formidable.js:8:15)
+      at Object.<anonymous> (node_modules/formidable/src/index.js:5:20)
+      at Object.require (node_modules/superagent/src/node/index.js:17:20)
+      at Object.<anonymous> (node_modules/supertest/lib/test.js:11:21)
+      at Object.<anonymous> (node_modules/supertest/index.js:14:14)
+      at Object.require (specs/tests/TASK-001.test.js:6:17)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        1.082 s
+Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.

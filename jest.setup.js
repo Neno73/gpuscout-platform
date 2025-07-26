@@ -1,6 +1,15 @@
 // Jest setup file
 import '@testing-library/jest-dom';
 
+// Polyfill for Node.js compatibility
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = require('util').TextEncoder;
+}
+
+if (typeof global.TextDecoder === 'undefined') {
+  global.TextDecoder = require('util').TextDecoder;
+}
+
 // Mock fetch for API calls
 global.fetch = jest.fn();
 
