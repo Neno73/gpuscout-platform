@@ -16,12 +16,12 @@ name = "gpuscout-platform"
 [[d1_databases]]
 binding = "DB"
 database_name = "gpuscout-db"
-database_id = "your-d1-database-id"
+database_id = "950466a5-ce47-4edc-989a-5701f60aabdf"
 
-# KV for rate limiting and sessions
+# KV for rate limiting and sessions  
 [[kv_namespaces]]
 binding = "CACHE"
-id = "your-kv-namespace-id"
+id = "546589c0cee64695b08d26d75f9d1795"
 
 # Environment variables
 [vars]
