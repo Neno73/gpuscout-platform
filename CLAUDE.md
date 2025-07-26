@@ -115,31 +115,43 @@ When implementing features:
 # AI-Driven Development Project Guide
 
 ## 🎯 Project Overview
-This is an AI-driven development project where you (Claude Code) are the primary developer. You will implement features based on comprehensive specifications, with tests serving as immutable contracts for success.
+This is an AI-driven development project where you (Claude Code) are the primary developer. You will implement features based on comprehensive specifications, leveraging powerful MCP tools for maximum efficiency.
 
-## 🔄 Development Workflow
+## 🔄 Enhanced Development Workflow
 
-### Context Aggregation for Complex Features:
-If your feature needs to understand multiple services:
-```bash
-# Use the context aggregation command
-/context:aggregate user-service,order-service,payment-service
-
-# This creates a focused summary in .claude/context/
-# Including: interfaces, key functions, data flows
-```
-
-### Your Development Cycle:
+### Phase 1: Task Planning & MCP Assessment
 1. **Select Task**: Use `/task:select TASK-XXX` to choose from specs/spec.md
-2. **Read Specs**: Study specs/features/[task].md thoroughly
-   - Pay special attention to "Library Documentation & Examples" section
-   - Use the provided code patterns - they are CURRENT best practices
-   - Note version numbers and any migration warnings
-3. **Verify Tests**: Check specs/tests/[task].test.md exists (immutable)
-4. **Implement**: Write code to pass ALL tests
-   - Follow the code examples exactly - they're from Context7/Cloudflare docs
-   - Don't improvise patterns - use what's provided
-5. **Success**: Hooks auto-update registry, docs, memory, and find next task
+2. **MCP Tool Review**: Identify which MCP tools can add value:
+   - **Cloudflare MCP**: For actual infrastructure (D1, KV, Workers deployment)
+   - **Sentry MCP**: For error tracking and monitoring setup
+   - **DataDog MCP**: For performance monitoring and metrics
+   - **Playwright MCP**: For E2E testing and user journey validation
+   - **Auth0 MCP**: For authentication patterns and enterprise features
+   - **Neon MCP**: For database operations and alternatives
+3. **Create TodoWrite Plan**: Include MCP usage and documentation steps
+4. **Read Specs**: Study specs/features/[task].md thoroughly
+
+### Phase 2: Implementation with MCP Integration
+1. **Start with Real Infrastructure**: Use Cloudflare MCP to create actual resources
+2. **Implement with MCP Support**: Actively leverage selected tools during development
+3. **Flexible Testing Approach**: 
+   - Write tests that focus on functionality over rigid formats
+   - Allow reasonable variations (like bcrypt prefixes, library differences)
+   - Update tests when platform realities differ from assumptions
+   - Document why changes were made
+4. **Monitor from Day One**: Set up Sentry/DataDog tracking early
+
+### Phase 3: Mandatory Documentation & Memory
+1. **MANDATORY Documentation Updates** (NON-NEGOTIABLE):
+   - Update cheatsheet.md (system state, endpoints, components)
+   - Update CLAUDE.md (architecture status)
+   - Update spec.md (mark task complete)
+2. **Memory System**: Add key insights (NOT code blocks):
+   - Decision rationale ("Why Cloudflare Workers over Express")
+   - Technical discoveries ("bcryptjs uses $2a$, Jest needs 'node' env")
+   - Patterns that work ("Rate limiting with KV storage")
+   - Gotchas and solutions
+3. **Commit with Structure**: Include MCP tools used and insights gained
 
 ### Failure Handling:
 - **Attempts 1-2**: Debug and retry
