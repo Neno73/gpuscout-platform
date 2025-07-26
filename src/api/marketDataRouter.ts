@@ -1,7 +1,9 @@
 /**
- * Market Data Router for 500.farm API integration
- * Handles GPU pricing, offers, machines, and historical data collection
+ * Unified Market Data Router for 500.farm API integration
+ * Optimized approach eliminating data redundancy across endpoints
  */
+
+import { UnifiedDataCollectionService } from '../services/unifiedDataCollectionService';
 
 export interface Env {
   DB: D1Database;
