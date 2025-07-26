@@ -4,27 +4,27 @@
 
 PASS specs/tests/TASK-001.test.js
   Email Validation
-    ✓ accepts valid email formats (4 ms)
-    ✓ rejects invalid email formats (3 ms)
-    ✓ handles edge cases (2 ms)
+    ✓ accepts valid email formats (3 ms)
+    ✓ rejects invalid email formats (1 ms)
+    ✓ handles edge cases (1 ms)
   Password Strength Validation
-    ✓ accepts strong passwords (3 ms)
-    ✓ rejects weak passwords (4 ms)
-    ✓ provides helpful feedback messages (7 ms)
+    ✓ accepts strong passwords (1 ms)
+    ✓ rejects weak passwords (1 ms)
+    ✓ provides helpful feedback messages (1 ms)
   JWT Token Management
     ✓ generates valid access and refresh tokens (3 ms)
     ✓ access token expires in 1 hour (1 ms)
     ✓ refresh token expires in 7 days (1 ms)
-    ✓ rejects invalid tokens (8 ms)
-    ✓ rejects expired tokens (1102 ms)
+    ✓ rejects invalid tokens (7 ms)
+    ✓ rejects expired tokens (1103 ms)
   Password Hashing
-    ✓ hashes passwords with bcrypt (331 ms)
-    ✓ verifies correct passwords (623 ms)
-    ✓ rejects incorrect passwords (625 ms)
-    ✓ uses 12 salt rounds for security (308 ms)
+    ✓ hashes passwords with bcrypt (332 ms)
+    ✓ verifies correct passwords (598 ms)
+    ✓ rejects incorrect passwords (607 ms)
+    ✓ uses 12 salt rounds for security (309 ms)
 
 Test Suites: 1 passed, 1 total
 Tests:       15 passed, 15 total
 Snapshots:   0 total
-Time:        3.544 s, estimated 4 s
+Time:        3.511 s, estimated 4 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.

@@ -8,10 +8,22 @@ GPUScout Platform is an AI-powered analytics platform for GPU hosts to optimize 
 
 ## Development Setup
 
-Since this is in the business planning phase, there are no traditional build/test commands yet. The project consists of documentation for:
-- Business case, requirements, and constraints
-- System architecture and technical design
-- User stories and interface contracts
+### Current Status: TASK-001 COMPLETED ✅
+Authentication system fully implemented with:
+- Cloudflare Workers + D1 database backend
+- JWT authentication with refresh tokens
+- Password hashing (bcryptjs, 12 salt rounds)
+- Input validation (Zod schemas)
+- Complete test coverage (15/15 tests passing)
+
+### Available Commands
+```bash
+npm test                    # Run test suite (Jest)
+npm run dev                 # Start Cloudflare Workers dev server
+wrangler dev                # Alternative dev server
+npm run test:watch          # Watch mode for tests
+npm run test:coverage       # Coverage report
+```
 
 ## Architecture Overview
 
