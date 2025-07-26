@@ -12,13 +12,13 @@
 
 ### Authentication
 ```
-None yet - will be updated as implemented
-Example format:
-POST   /api/auth/register      → src/controllers/auth.js:register()
-POST   /api/auth/login         → src/controllers/auth.js:login()
-POST   /api/auth/refresh       → src/controllers/auth.js:refreshToken()
-POST   /api/auth/verify-email  → src/controllers/auth.js:verifyEmail()
-POST   /api/auth/logout        → src/controllers/auth.js:logout()
+✅ IMPLEMENTED (TASK-001)
+POST   /api/auth/register        → src/api/auth.js:handleRegistration()
+POST   /api/auth/login           → src/api/auth.js:handleLogin()
+POST   /api/auth/refresh         → src/api/auth.js:handleRefresh()
+POST   /api/auth/verify-email    → src/api/auth.js:handleEmailVerification()
+POST   /api/auth/forgot-password → src/api/auth.js:handleForgotPassword()
+POST   /api/auth/reset-password  → src/api/auth.js:handleResetPassword()
 ```
 
 ### Portfolio Management  
