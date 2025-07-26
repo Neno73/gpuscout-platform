@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 interface EmailVerificationBannerProps {
   user: User;
-  onResendVerification: () => Promise<void>;
+  onResendVerification?: () => Promise<void>;
   onDismiss?: () => void;
 }
 
