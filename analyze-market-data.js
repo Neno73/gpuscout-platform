@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Connect to local D1 database
-const dbPath = join(__dirname, '.wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite');
+const dbPath = join(__dirname, '.wrangler/state/v3/d1/miniflare-D1DatabaseObject/f272169f61c5ab0eef210fc95e193d10f70878fbd97e423d5cbd3a2362c11d3c.sqlite');
 const db = new Database(dbPath);
 
 console.log('🔍 Analyzing GPUScout Market Data...\n');
