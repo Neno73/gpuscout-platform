@@ -67,12 +67,30 @@ export function EmailVerificationBanner({
     setMessage('');
 
     try {
-      await onResendVerification();
+      // If onResendVerification is provided, use it; otherwise call API directly
+      if (onResendVerification) {
+        await onResendVerification();
+      } else {
+        const response = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: user.email }),
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to send verification email');
+        }
+      }
+
       setMessage('Verification email sent! Please check your inbox and spam folder.');
       setMessageType('success');
       setResendCooldown(60); // 1 minute cooldown
     } catch (error) {
-      setMessage('Failed to send verification email. Please try again.');
+      setMessage(error instanceof Error ? error.message : 'Failed to send verification email. Please try again.');
       setMessageType('error');
       setResendCooldown(30); // 30 second cooldown on error
     } finally {
