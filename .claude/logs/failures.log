@@ -504,3 +504,24 @@ Tests:       5 failed, 10 passed, 15 total
 Snapshots:   0 total
 Time:        2.845 s, estimated 3 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
+Task TASK-001 failed 5 times. Last error:
+    TypeError: payload must be an instance of Uint8Array
+
+      132 |       .setProtectedHeader({ alg: 'HS256' })
+      133 |       .setExpirationTime('1s')
+    > 134 |       .sign(new TextEncoder().encode(mockEnv.JWT_SECRET));
+          |        ^
+      135 |     
+      136 |     // Wait for token to expire
+      137 |     await new Promise(resolve => setTimeout(resolve, 1100));
+
+      at new FlattenedSign (node_modules/jose/dist/browser/jws/flattened/sign.js:11:19)
+      at new CompactSign (node_modules/jose/dist/browser/jws/compact/sign.js:4:27)
+      at SignJWT.sign (node_modules/jose/dist/browser/jwt/sign.js:11:21)
+      at Object.sign (specs/tests/TASK-001.test.js:134:8)
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 11 passed, 15 total
+Snapshots:   0 total
+Time:        2.83 s, estimated 3 s
+Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.

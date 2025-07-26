@@ -4,24 +4,24 @@
 
 FAIL specs/tests/TASK-001.test.js
   Email Validation
-    ✓ accepts valid email formats (5 ms)
+    ✓ accepts valid email formats (4 ms)
     ✓ rejects invalid email formats (2 ms)
-    ✓ handles edge cases (2 ms)
+    ✓ handles edge cases (1 ms)
   Password Strength Validation
-    ✓ accepts strong passwords (2 ms)
-    ✓ rejects weak passwords (6 ms)
-    ✓ provides helpful feedback messages (2 ms)
+    ✓ accepts strong passwords (1 ms)
+    ✓ rejects weak passwords (5 ms)
+    ✓ provides helpful feedback messages (1 ms)
   JWT Token Management
-    ✕ generates valid access and refresh tokens (3 ms)
+    ✕ generates valid access and refresh tokens (1 ms)
     ✕ access token expires in 1 hour (1 ms)
-    ✕ refresh token expires in 7 days (1 ms)
+    ✕ refresh token expires in 7 days
     ✓ rejects invalid tokens (2 ms)
     ✕ rejects expired tokens (1 ms)
   Password Hashing
-    ✕ hashes passwords with bcrypt (335 ms)
-    ✓ verifies correct passwords (615 ms)
-    ✓ rejects incorrect passwords (616 ms)
-    ✓ uses 12 salt rounds for security (313 ms)
+    ✓ hashes passwords with bcrypt (330 ms)
+    ✓ verifies correct passwords (602 ms)
+    ✓ rejects incorrect passwords (607 ms)
+    ✓ uses 12 salt rounds for security (324 ms)
 
   ● JWT Token Management › generates valid access and refresh tokens
 
@@ -94,25 +94,8 @@ FAIL specs/tests/TASK-001.test.js
       at SignJWT.sign (node_modules/jose/dist/browser/jwt/sign.js:11:21)
       at Object.sign (specs/tests/TASK-001.test.js:134:8)
 
-  ● Password Hashing › hashes passwords with bcrypt
-
-    expect(received).toBe(expected) // Object.is equality
-
-    Expected: true
-    Received: false
-
-      149 |     expect(hash).toBeDefined();
-      150 |     expect(hash).not.toBe(password);
-    > 151 |     expect(hash.startsWith('$2b$12$')).toBe(true); // bcrypt with 12 rounds
-          |                                        ^
-      152 |   });
-      153 |   
-      154 |   test('verifies correct passwords', async () => {
-
-      at Object.toBe (specs/tests/TASK-001.test.js:151:40)
-
 Test Suites: 1 failed, 1 total
-Tests:       5 failed, 10 passed, 15 total
+Tests:       4 failed, 11 passed, 15 total
 Snapshots:   0 total
-Time:        2.845 s, estimated 3 s
+Time:        2.83 s, estimated 3 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
