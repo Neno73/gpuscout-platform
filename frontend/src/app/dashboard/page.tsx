@@ -140,6 +140,116 @@ const mockOfferData: MarketplaceOffer[] = [
   }
 ]
 
+const mockProviderData: GPUProvider[] = [
+  {
+    id: 1,
+    provider_name: "CloudGPU US East",
+    country: "United States",
+    total_machines: 450,
+    total_tflops: 1620,
+    avg_dlperf_per_dollar: 425,
+    verification_status: 'verified',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 2,
+    provider_name: "EuroCompute",
+    country: "Germany", 
+    total_machines: 280,
+    total_tflops: 980,
+    avg_dlperf_per_dollar: 390,
+    verification_status: 'verified',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 3,
+    provider_name: "NetherlandsGPU",
+    country: "Netherlands",
+    total_machines: 120,
+    total_tflops: 420,
+    avg_dlperf_per_dollar: 410,
+    verification_status: 'unverified',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 4,
+    provider_name: "CanadianCloud",
+    country: "Canada",
+    total_machines: 95,
+    total_tflops: 340,
+    avg_dlperf_per_dollar: 385,
+    verification_status: 'verified',
+    created_at: new Date().toISOString()
+  }
+]
+
+const mockAvailabilityData: AvailabilityMetric[] = [
+  {
+    id: 1,
+    gpu_name: "RTX 4090",
+    count: 85,
+    rented: false,
+    verified: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 2,
+    gpu_name: "RTX 4090", 
+    count: 85,
+    rented: true,
+    verified: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 3,
+    gpu_name: "RTX 3090",
+    count: 60,
+    rented: false,
+    verified: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 4,
+    gpu_name: "RTX 3090",
+    count: 60,
+    rented: true,
+    verified: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 5,
+    gpu_name: "RTX 3080",
+    count: 45,
+    rented: false,
+    verified: false,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 6,
+    gpu_name: "RTX 3080",
+    count: 45,
+    rented: true,
+    verified: false,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 7,
+    gpu_name: "RTX 4080",
+    count: 30,
+    rented: false,
+    verified: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 8,
+    gpu_name: "RTX 4080",
+    count: 30,
+    rented: true,
+    verified: true,
+    created_at: new Date().toISOString()
+  }
+]
+
 export default function DashboardPage() {
   const [gpuData, setGpuData] = useState<GPUMarketStat[]>(mockGPUData)
   const [offerData, setOfferData] = useState<MarketplaceOffer[]>(mockOfferData)
