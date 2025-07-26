@@ -239,11 +239,13 @@ GPU Data Updates:
 ## 🚨 Current Blockers/Issues
 
 ```
-None yet - will be updated as encountered
-Example format:
-- [ ] BLOCKER: Sentry MCP not connecting (waiting for user fix)
-- [ ] ISSUE: 500.farm API rate limits not documented
-- [ ] WARNING: Grafana MCP slow response times (>2s)
+AUTHENTICATION SYSTEM (TASK-001/002):
+- [ ] WARNING: 13 failing tests need fixes (password regex, JWT mocks, token expiration format)
+- [ ] MISSING: Frontend UI forms for testing auth flow
+- [ ] MISSING: Email service configuration (SendGrid/Mailgun API keys needed)
+- [ ] NOTE: Architecture complete, endpoints functional, tests fixable later
+
+NEXT PRIORITY: Dashboard + Data Pipeline (core system demo)
 ```
 
 ## 📝 Implementation Notes
