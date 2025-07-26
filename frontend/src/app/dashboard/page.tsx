@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const [offerData, setOfferData] = useState<MarketplaceOffer[]>([])
   const [providerData, setProviderData] = useState<GPUProvider[]>([])
   const [availabilityData, setAvailabilityData] = useState<AvailabilityMetric[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
   // Function to fetch real data from API
