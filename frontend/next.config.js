@@ -7,7 +7,7 @@ const nextConfig = {
   },
   // Static export for Cloudflare Pages
   output: 'export',
-  distDir: 'dist'
+  distDir: 'out'
 }
 
 module.exports = nextConfig
