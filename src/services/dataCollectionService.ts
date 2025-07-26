@@ -407,30 +407,136 @@ export class DataCollectionService {
   }
 
   /**
-   * Store GPU offer in database
+   * Store GPU offer in database - Updated for real 500.farm offers structure
    */
   private async storeOffer(offer: any): Promise<void> {
-    const id = offer.id || crypto.randomUUID();
+    const timestamp = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
     
-    await this.env.DB.prepare(`
-      INSERT OR REPLACE INTO gpu_offers 
-      (id, model, price_per_hour, availability, location, performance_score, 
-       memory_gb, host_id, external_offer_id, specifications, updated_at, expires_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      id,
-      offer.model || 'unknown',
-      offer.price_per_hour || 0,
-      offer.availability !== false,
-      offer.location || null,
-      offer.performance_score || null,
-      offer.memory_gb || null,
-      offer.host_id || null,
-      offer.id || null,
-      JSON.stringify(offer),
-      new Date().toISOString(),
-      new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Expires in 24 hours
-    ).run();
+    try {
+      await this.env.DB.prepare(`
+        INSERT OR REPLACE INTO gpu_offers 
+        (id, bundle_id, machine_id, host_id,
+         gpu_name, gpu_ram, gpu_total_ram, num_gpus, gpu_arch, compute_cap,
+         gpu_max_power, gpu_max_temp, gpu_mem_bw, gpu_lanes, pci_gen, pcie_bw,
+         cpu_name, cpu_cores, cpu_cores_effective, cpu_ghz, cpu_ram, cpu_arch, has_avx,
+         disk_name, disk_space, disk_bw,
+         dph_base, dph_total_adj, discounted_dph_total, min_bid, storage_cost, vram_costperhour,
+         inet_down, inet_up, inet_down_cost, inet_up_cost, internet_down_cost_per_tb, internet_up_cost_per_tb,
+         dlperf, dlperf_per_dphtotal, flops_per_dphtotal, total_flops, score,
+         reliability, reliability2, reliability_mult, verification, verified, expected_reliability,
+         geolocation, geolocode, public_ipaddr, static_ip, direct_port_count,
+         os_version, driver_version, driver_vers, cuda_max_good, mobo_name,
+         rentable, start_date, end_date, duration, time_remaining,
+         vms_enabled, is_vm_deverified,
+         hosting_type, resource_type, discount_rate, credit_discount_max,
+         data_timestamp, updated_at, expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        offer.ask_contract_id || offer.id,
+        offer.bundle_id || null,
+        offer.machine_id || null,
+        offer.host_id || null,
+        
+        // GPU specs
+        offer.gpu_name || 'unknown',
+        offer.gpu_ram || null,
+        offer.gpu_total_ram || null,
+        offer.num_gpus || 1,
+        offer.gpu_arch || null,
+        offer.compute_cap || null,
+        offer.gpu_max_power || null,
+        offer.gpu_max_temp || null,
+        offer.gpu_mem_bw || null,
+        offer.gpu_lanes || null,
+        offer.pci_gen || null,
+        offer.pcie_bw || null,
+        
+        // CPU specs
+        offer.cpu_name || null,
+        offer.cpu_cores || null,
+        offer.cpu_cores_effective || null,
+        offer.cpu_ghz || null,
+        offer.cpu_ram || null,
+        offer.cpu_arch || null,
+        offer.has_avx || null,
+        
+        // Storage
+        offer.disk_name || null,
+        offer.disk_space || null,
+        offer.disk_bw || null,
+        
+        // Pricing
+        offer.dph_base || offer.min_bid || 0,
+        offer.dph_total_adj || null,
+        offer.discounted_dph_total || null,
+        offer.min_bid || null,
+        offer.storage_cost || null,
+        offer.vram_costperhour || null,
+        
+        // Internet
+        offer.inet_down || null,
+        offer.inet_up || null,
+        offer.inet_down_cost || null,
+        offer.inet_up_cost || null,
+        offer.internet_down_cost_per_tb || null,
+        offer.internet_up_cost_per_tb || null,
+        
+        // Performance
+        offer.dlperf || null,
+        offer.dlperf_per_dphtotal || null,
+        offer.flops_per_dphtotal || null,
+        offer.total_flops || null,
+        offer.score || null,
+        
+        // Reliability
+        offer.reliability || null,
+        offer.reliability2 || null,
+        offer.reliability_mult || null,
+        offer.verification || 'unverified',
+        offer.verified || false,
+        offer.expected_reliability || null,
+        
+        // Location
+        offer.geolocation || null,
+        offer.geolocode || null,
+        offer.public_ipaddr || null,
+        offer.static_ip || false,
+        offer.direct_port_count || null,
+        
+        // System
+        offer.os_version || null,
+        offer.driver_version || null,
+        offer.driver_vers || null,
+        offer.cuda_max_good || null,
+        offer.mobo_name || null,
+        
+        // Availability
+        offer.rentable !== false,
+        offer.start_date || null,
+        offer.end_date || null,
+        offer.duration || null,
+        offer.time_remaining || null,
+        
+        // VM
+        offer.vms_enabled || false,
+        offer.is_vm_deverified || false,
+        
+        // Business
+        offer.hosting_type || null,
+        offer.resource_type || 'gpu',
+        offer.discount_rate || null,
+        offer.credit_discount_max || null,
+        
+        // Metadata
+        timestamp,
+        timestamp,
+        expiresAt
+      ).run();
+    } catch (error) {
+      console.error('Error storing offer:', error);
+      throw error;
+    }
   }
 
   /**

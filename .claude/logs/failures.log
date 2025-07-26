@@ -720,3 +720,16 @@ In /home/neno/Code/gpuscout-platform
   testPathIgnorePatterns: /node_modules/ - 44 matches
   testRegex:  - 0 matches
 Pattern: specs/tests/TASK-001-COMPLETED.test.js - 0 matches
+Task TASK-001-COMPLETED failed 5 times. Last error:
+
+> gpuscout-platform@1.0.0 test
+> jest specs/tests/TASK-001-COMPLETED.test.js
+
+No tests found, exiting with code 1
+Run with `--passWithNoTests` to exit with code 0
+In /home/neno/Code/gpuscout-platform
+  44 files checked.
+  testMatch: /home/neno/Code/gpuscout-platform/**/__tests__/**/*.{js,jsx,ts,tsx}, /home/neno/Code/gpuscout-platform/**/*.(test|spec).{js,jsx,ts,tsx} - 5 matches
+  testPathIgnorePatterns: /node_modules/ - 44 matches
+  testRegex:  - 0 matches
+Pattern: specs/tests/TASK-001-COMPLETED.test.js - 0 matches
