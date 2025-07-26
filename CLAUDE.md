@@ -201,14 +201,23 @@ project/
 - Update registry when adding new endpoints/components
 - Commit with descriptive messages
 
-## 🛠️ Available MCP Tools
-- **Auth0 MCP**: Complete authentication system management (applications, APIs, actions, logs, forms)
-- **Graphity Memory MCP**: Persistent knowledge graph for storing decisions, patterns, and learnings
-- **Grafana MCP**: Performance monitoring during tests
-- **DataDog MCP**: APM tracing for debugging
-- **Sentry MCP**: Error tracking and reporting
-- **Playwright MCP**: E2E test automation
-- **Firecrawl MCP**: External service testing
+## 🛠️ Available MCP Tools (USE FREQUENTLY!)
+- **Cloudflare MCP**: ⭐ PRIMARY - D1 databases, KV namespaces, Workers deployment
+- **Auth0 MCP**: Authentication system management, enterprise patterns
+- **Graphity Memory MCP**: ⭐ Store key insights, decisions, gotchas (NOT code)
+- **Sentry MCP**: Error tracking, issue management, monitoring setup
+- **DataDog MCP**: Performance monitoring, APM tracing, metrics dashboards  
+- **Playwright MCP**: E2E testing, user journey automation, browser testing
+- **Neon MCP**: Database operations, PostgreSQL features, scaling patterns
+- **Strapi MCP**: Content management, API patterns
+- **Docker MCP**: Container management for complex setups
+
+### MCP Usage Priority:
+1. **Every Task**: Cloudflare MCP for real infrastructure
+2. **Every Task**: Memory MCP for insights and learnings  
+3. **Early Setup**: Sentry + DataDog for monitoring
+4. **Complex Features**: Playwright for comprehensive testing
+5. **As Needed**: Auth0, Neon, Strapi for specialized functionality
 
 ## 📊 Registry Management
 
