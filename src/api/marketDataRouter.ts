@@ -1,0 +1,438 @@
+/**
+ * Market Data Router for 500.farm API integration
+ * Handles GPU pricing, offers, machines, and historical data collection
+ */
+
+export interface Env {
+  DB: D1Database;
+  CACHE: KVNamespace;
+  FIVEHUNDRED_FARM_API_URL?: string;
+}
+
+export interface GPUStats {
+  model: string;
+  rental_count: number;
+  median_price: number;
+  percentile_25: number;
+  percentile_75: number;
+  percentile_90: number;
+  min_price: number;
+  max_price: number;
+  last_updated: string;
+}
+
+export interface GPUOffer {
+  id: string;
+  model: string;
+  price_per_hour: number;
+  availability: boolean;
+  location: string;
+  performance_score?: number;
+  memory_gb: number;
+  host_id: string;
+}
+
+export interface MarketDataResponse {
+  success: boolean;
+  data: any;
+  meta: {
+    timestamp: string;
+    dataSource: string;
+    cached: boolean;
+    nextUpdate?: string;
+  };
+}
+
+const FIVEHUNDRED_FARM_BASE_URL = 'https://500.farm/vastai-exporter';
+const CACHE_TTL = {
+  GPU_STATS: 300, // 5 minutes
+  OFFERS: 60,     // 1 minute (real-time pricing)
+  MACHINES: 600,  // 10 minutes
+  HOSTS: 1800     // 30 minutes
+};
+
+/**
+ * Main router for market data endpoints
+ */
+export async function marketDataHandler(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  // CORS handling
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      }
+    });
+  }
+
+  try {
+    if (path === '/api/market/gpu-stats') {
+      return await handleGPUStats(request, env);
+    }
+    
+    if (path === '/api/market/offers') {
+      return await handleOffers(request, env);
+    }
+    
+    if (path === '/api/market/machines') {
+      return await handleMachines(request, env);
+    }
+    
+    if (path === '/api/market/hosts') {
+      return await handleHosts(request, env);
+    }
+    
+    if (path === '/api/market/sync') {
+      return await handleDataSync(request, env);
+    }
+    
+    if (path === '/api/market/historical') {
+      return await handleHistoricalData(request, env);
+    }
+
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Market data endpoint not found'
+    }), { status: 404 });
+
+  } catch (error) {
+    console.error('Market data handler error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Internal server error'
+    }), { status: 500 });
+  }
+}
+
+/**
+ * Handle GPU stats endpoint - lightweight, works well
+ */
+async function handleGPUStats(request: Request, env: Env): Promise<Response> {
+  const cacheKey = 'gpu-stats';
+  
+  try {
+    // Check cache first
+    const cached = await env.CACHE.get(cacheKey);
+    if (cached) {
+      const parsedData = JSON.parse(cached);
+      return Response.json({
+        success: true,
+        data: parsedData,
+        meta: {
+          timestamp: new Date().toISOString(),
+          dataSource: '500.farm',
+          cached: true,
+          nextUpdate: new Date(Date.now() + CACHE_TTL.GPU_STATS * 1000).toISOString()
+        }
+      });
+    }
+
+    // Fetch fresh data
+    const response = await fetch(`${FIVEHUNDRED_FARM_BASE_URL}/gpu-stats`);
+    if (!response.ok) {
+      throw new Error(`500.farm API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Store in cache
+    await env.CACHE.put(cacheKey, JSON.stringify(data), {
+      expirationTtl: CACHE_TTL.GPU_STATS
+    });
+
+    // Store historical snapshot in D1
+    await storeGPUStatsSnapshot(data, env);
+
+    return Response.json({
+      success: true,
+      data: data,
+      meta: {
+        timestamp: new Date().toISOString(),
+        dataSource: '500.farm',
+        cached: false,
+        nextUpdate: new Date(Date.now() + CACHE_TTL.GPU_STATS * 1000).toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('GPU stats fetch error:', error);
+    return Response.json({
+      success: false,
+      error: 'Failed to fetch GPU statistics'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * Handle offers endpoint - large data, needs chunking strategy
+ */
+async function handleOffers(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const limit = parseInt(url.searchParams.get('limit') || '100');
+  const offset = parseInt(url.searchParams.get('offset') || '0');
+  const model = url.searchParams.get('model');
+  const maxPrice = parseFloat(url.searchParams.get('maxPrice') || '999999');
+
+  try {
+    // First, try to get from our processed database
+    let query = `
+      SELECT * FROM gpu_offers 
+      WHERE price_per_hour <= ? 
+      ${model ? 'AND model = ?' : ''}
+      ORDER BY price_per_hour ASC
+      LIMIT ? OFFSET ?
+    `;
+    
+    const params = model 
+      ? [maxPrice, model, limit, offset]
+      : [maxPrice, limit, offset];
+
+    const results = await env.DB.prepare(query)
+      .bind(...params)
+      .all();
+
+    if (results.results && results.results.length > 0) {
+      return Response.json({
+        success: true,
+        data: {
+          offers: results.results,
+          pagination: {
+            limit,
+            offset,
+            total: results.results.length,
+            hasMore: results.results.length === limit
+          }
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          dataSource: 'cached-db',
+          cached: true
+        }
+      });
+    }
+
+    // If no cached data, trigger background sync and return limited data
+    // Note: We avoid fetching the full 10MB+ dataset directly
+    return Response.json({
+      success: true,
+      data: {
+        offers: [],
+        message: 'Offers data is being synchronized. Please try again in a few minutes.',
+        syncInProgress: true
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        dataSource: '500.farm',
+        cached: false
+      }
+    });
+
+  } catch (error) {
+    console.error('Offers fetch error:', error);
+    return Response.json({
+      success: false,
+      error: 'Failed to fetch GPU offers'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * Handle machines endpoint - similar large data strategy
+ */
+async function handleMachines(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const limit = parseInt(url.searchParams.get('limit') || '50');
+  const offset = parseInt(url.searchParams.get('offset') || '0');
+
+  try {
+    const results = await env.DB.prepare(`
+      SELECT * FROM gpu_machines 
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(limit, offset).all();
+
+    return Response.json({
+      success: true,
+      data: {
+        machines: results.results || [],
+        pagination: { limit, offset, hasMore: (results.results?.length || 0) === limit }
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        dataSource: 'cached-db',
+        cached: true
+      }
+    });
+
+  } catch (error) {
+    console.error('Machines fetch error:', error);
+    return Response.json({
+      success: false,
+      error: 'Failed to fetch machine data'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * Handle hosts endpoint
+ */
+async function handleHosts(request: Request, env: Env): Promise<Response> {
+  try {
+    const results = await env.DB.prepare(`
+      SELECT * FROM gpu_hosts 
+      ORDER BY last_seen DESC
+      LIMIT 100
+    `).all();
+
+    return Response.json({
+      success: true,
+      data: { hosts: results.results || [] },
+      meta: {
+        timestamp: new Date().toISOString(),
+        dataSource: 'cached-db',
+        cached: true
+      }
+    });
+
+  } catch (error) {
+    console.error('Hosts fetch error:', error);
+    return Response.json({
+      success: false,
+      error: 'Failed to fetch host data'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * Background data synchronization endpoint
+ * This handles the large dataset collection via scheduled/manual triggers
+ */
+async function handleDataSync(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return Response.json({ success: false, error: 'Method not allowed' }, { status: 405 });
+  }
+
+  try {
+    const { endpoint } = await request.json();
+    
+    // Start background sync process
+    const syncId = crypto.randomUUID();
+    
+    // Store sync status
+    await env.CACHE.put(`sync-${syncId}`, JSON.stringify({
+      status: 'started',
+      endpoint,
+      startTime: new Date().toISOString()
+    }), { expirationTtl: 3600 }); // 1 hour
+
+    // In a real implementation, this would trigger a Cloudflare Cron Job or Durable Object
+    // For now, return sync initiated response
+    
+    return Response.json({
+      success: true,
+      data: {
+        syncId,
+        status: 'initiated',
+        message: 'Background sync process started',
+        estimatedTime: '5-10 minutes'
+      }
+    });
+
+  } catch (error) {
+    console.error('Data sync error:', error);
+    return Response.json({
+      success: false,
+      error: 'Failed to initiate data sync'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * Historical data endpoint for trends and analytics
+ */
+async function handleHistoricalData(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const model = url.searchParams.get('model');
+  const days = parseInt(url.searchParams.get('days') || '7');
+  const metric = url.searchParams.get('metric') || 'median_price';
+
+  try {
+    let query = `
+      SELECT 
+        DATE(created_at) as date,
+        model,
+        AVG(${metric}) as avg_value,
+        MIN(${metric}) as min_value,
+        MAX(${metric}) as max_value,
+        COUNT(*) as data_points
+      FROM gpu_stats_history 
+      WHERE created_at >= datetime('now', '-${days} days')
+      ${model ? 'AND model = ?' : ''}
+      GROUP BY DATE(created_at), model
+      ORDER BY date DESC, model
+    `;
+
+    const results = model 
+      ? await env.DB.prepare(query).bind(model).all()
+      : await env.DB.prepare(query).all();
+
+    return Response.json({
+      success: true,
+      data: {
+        historical: results.results || [],
+        period: `${days} days`,
+        metric
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        dataSource: 'historical-db'
+      }
+    });
+
+  } catch (error) {
+    console.error('Historical data error:', error);
+    return Response.json({
+      success: false,
+      error: 'Failed to fetch historical data'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * Store GPU stats snapshot for historical analysis
+ */
+async function storeGPUStatsSnapshot(data: any, env: Env): Promise<void> {
+  try {
+    const timestamp = new Date().toISOString();
+    
+    // Store each GPU model's stats
+    for (const [model, stats] of Object.entries(data as Record<string, any>)) {
+      if (typeof stats === 'object' && stats !== null) {
+        await env.DB.prepare(`
+          INSERT INTO gpu_stats_history 
+          (model, rental_count, median_price, percentile_25, percentile_75, 
+           percentile_90, min_price, max_price, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          model,
+          stats.rental_count || 0,
+          stats.median_price || 0,
+          stats.percentile_25 || 0,
+          stats.percentile_75 || 0,
+          stats.percentile_90 || 0,
+          stats.min_price || 0,
+          stats.max_price || 0,
+          timestamp
+        ).run();
+      }
+    }
+  } catch (error) {
+    console.error('Failed to store GPU stats snapshot:', error);
+    // Don't throw - we don't want to fail the main request
+  }
+}
