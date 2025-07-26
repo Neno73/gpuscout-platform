@@ -31,6 +31,5 @@ module.exports = {
   },
   transformIgnorePatterns: [
     'node_modules/(?!(jose|@noble)/)'
-  ],
-  extensionsToTreatAsEsm: ['.js', '.jsx', '.ts', '.tsx']
+  ]
 };
