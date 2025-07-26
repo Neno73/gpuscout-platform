@@ -28,5 +28,9 @@ module.exports = {
         ['@babel/preset-typescript']
       ]
     }]
-  }
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(jose|@noble)/)'
+  ],
+  extensionsToTreatAsEsm: ['.js', '.jsx', '.ts', '.tsx']
 };

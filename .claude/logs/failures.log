@@ -366,3 +366,24 @@ Tests:       0 total
 Snapshots:   0 total
 Time:        1.082 s
 Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
+Task TASK-001 failed 5 times. Last error:
+                                                                                      ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+       6 | const request = require('supertest');
+       7 | const bcrypt = require('bcryptjs');
+    >  8 | const { SignJWT, jwtVerify } = require('jose');
+         |                                ^
+       9 | const crypto = require('crypto');
+      10 |
+      11 | // Import validation functions
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.require (specs/tests/TASK-001.test.js:8:32)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        1.052 s
+Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
