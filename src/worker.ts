@@ -3,7 +3,7 @@
  * Handles authentication and API routing
  */
 
-import { authHandler } from './api/auth';
+import { authHandler } from './api/authRouter';
 import { rateLimitHandler } from './middleware/rateLimit';
 import { corsHandler } from './middleware/cors';
 

@@ -5,8 +5,8 @@
 No tests found, exiting with code 1
 Run with `--passWithNoTests` to exit with code 0
 In /home/neno/Code/gpuscout-platform
-  33 files checked.
+  34 files checked.
   testMatch: /home/neno/Code/gpuscout-platform/**/__tests__/**/*.{js,jsx,ts,tsx}, /home/neno/Code/gpuscout-platform/**/*.(test|spec).{js,jsx,ts,tsx} - 4 matches
-  testPathIgnorePatterns: /node_modules/ - 33 matches
+  testPathIgnorePatterns: /node_modules/ - 34 matches
   testRegex:  - 0 matches
 Pattern: specs/tests/TASK-001.test.js - 0 matches
