@@ -116,12 +116,14 @@ None yet - will be updated as implemented
 
 ## 🔌 External Integrations
 
-### 500.farm API
+### 500.farm API ✅ INTEGRATED
 - **Base URL**: https://500.farm/vastai-exporter/
-- **Rate Limit**: Unknown (need to verify)
-- **Endpoints Used**: None yet
-- **Authentication**: None/API Key (TBD)
+- **Rate Limit**: 1 second delay between large requests (implemented)
+- **Endpoints Used**: gpu-stats (✅), offers (📊), machines (📊), hosts (📊)
+- **Authentication**: None required
 - **Data Types**: GPU pricing, availability, performance metrics
+- **Strategy**: Multi-approach data collection (streaming, pagination, range requests)
+- **Storage**: D1 database with historical tracking and caching
 
 ### Claude AI Integration  
 - **Service**: Claude API via MCP
