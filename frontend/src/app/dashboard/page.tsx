@@ -359,6 +359,12 @@ export default function DashboardPage() {
         <PricePerformanceChart data={offerData} />
       </div>
 
+      {/* Additional Charts */}
+      <div className="space-y-8">
+        <AvailabilityMetricsChart data={availabilityData} />
+        <GeographicDistributionChart data={providerData} />
+      </div>
+
       {/* Additional Analytics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
