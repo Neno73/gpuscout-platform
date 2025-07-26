@@ -324,3 +324,24 @@ In /home/neno/Code/gpuscout-platform
   testPathIgnorePatterns: /node_modules/ - 34 matches
   testRegex:  - 0 matches
 Pattern: specs/tests/TASK-001.test.js - 0 matches
+Task TASK-001 failed 5 times. Last error:
+      at loadPrivatePartialConfig (node_modules/@babel/core/src/config/partial.ts:111:44)
+          at loadPrivatePartialConfig.next (<anonymous>)
+      at loadPrivatePartialConfig (node_modules/@babel/core/src/config/partial.ts:170:12)
+          at loadPartialConfig.next (<anonymous>)
+      at evaluateSync (node_modules/gensync/index.js:251:28)
+      at sync (node_modules/gensync/index.js:89:14)
+      at fn (node_modules/@babel/core/src/errors/rewrite-stack-trace.ts:99:14)
+      at loadPartialConfigSync (node_modules/@babel/core/src/config/index.ts:50:60)
+      at loadPartialConfigSync (node_modules/@babel/core/src/config/index.ts:69:14)
+      at ScriptTransformer._getCacheKey (node_modules/@jest/transform/build/ScriptTransformer.js:228:41)
+      at ScriptTransformer._getFileCachePath (node_modules/@jest/transform/build/ScriptTransformer.js:289:27)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:525:32)
+      at ScriptTransformer._transformAndBuildScript (node_modules/@jest/transform/build/ScriptTransformer.js:674:40)
+      at ScriptTransformer.transform (node_modules/@jest/transform/build/ScriptTransformer.js:726:19)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        0.566 s
+Ran all test suites matching /specs\/tests\/TASK-001.test.js/i.
