@@ -1,17 +1,61 @@
 -- Market Data Tables for GPUScout Platform
 -- Schema for storing 500.farm API data with historical tracking
 
--- GPU Statistics Historical Data
+-- GPU Statistics Historical Data (Updated for real 500.farm structure)
 CREATE TABLE gpu_stats_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     model TEXT NOT NULL,
-    rental_count INTEGER DEFAULT 0,
-    median_price REAL DEFAULT 0,
-    percentile_25 REAL DEFAULT 0,
-    percentile_75 REAL DEFAULT 0,
-    percentile_90 REAL DEFAULT 0,
-    min_price REAL DEFAULT 0,
-    max_price REAL DEFAULT 0,
+    -- Rented stats (verified)
+    rented_verified_count INTEGER DEFAULT 0,
+    rented_verified_median REAL DEFAULT 0,
+    rented_verified_p10 REAL DEFAULT 0,
+    rented_verified_p90 REAL DEFAULT 0,
+    -- Rented stats (unverified)
+    rented_unverified_count INTEGER DEFAULT 0,
+    rented_unverified_median REAL DEFAULT 0,
+    rented_unverified_p10 REAL DEFAULT 0,
+    rented_unverified_p90 REAL DEFAULT 0,
+    -- Rented stats (all)
+    rented_all_count INTEGER DEFAULT 0,
+    rented_all_median REAL DEFAULT 0,
+    rented_all_p10 REAL DEFAULT 0,
+    rented_all_p90 REAL DEFAULT 0,
+    -- Available stats (verified)
+    available_verified_count INTEGER DEFAULT 0,
+    available_verified_median REAL DEFAULT 0,
+    available_verified_p10 REAL DEFAULT 0,
+    available_verified_p90 REAL DEFAULT 0,
+    -- Available stats (unverified)
+    available_unverified_count INTEGER DEFAULT 0,
+    available_unverified_median REAL DEFAULT 0,
+    available_unverified_p10 REAL DEFAULT 0,
+    available_unverified_p90 REAL DEFAULT 0,
+    -- Available stats (all)
+    available_all_count INTEGER DEFAULT 0,
+    available_all_median REAL DEFAULT 0,
+    available_all_p10 REAL DEFAULT 0,
+    available_all_p90 REAL DEFAULT 0,
+    -- Total stats (verified)
+    total_verified_count INTEGER DEFAULT 0,
+    total_verified_median REAL DEFAULT 0,
+    total_verified_p10 REAL DEFAULT 0,
+    total_verified_p90 REAL DEFAULT 0,
+    -- Total stats (unverified)
+    total_unverified_count INTEGER DEFAULT 0,
+    total_unverified_median REAL DEFAULT 0,
+    total_unverified_p10 REAL DEFAULT 0,
+    total_unverified_p90 REAL DEFAULT 0,
+    -- Total stats (all)
+    total_all_count INTEGER DEFAULT 0,
+    total_all_median REAL DEFAULT 0,
+    total_all_p10 REAL DEFAULT 0,
+    total_all_p90 REAL DEFAULT 0,
+    -- GPU specifications
+    vram_gb INTEGER DEFAULT 0,
+    dlperf REAL DEFAULT 0,
+    tflops REAL DEFAULT 0,
+    -- Metadata
+    data_timestamp TEXT, -- Original timestamp from 500.farm
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
