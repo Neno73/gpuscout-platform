@@ -142,9 +142,10 @@ const mockOfferData: MarketplaceOffer[] = [
 
 const mockProviderData: GPUProvider[] = [
   {
-    id: 1,
-    provider_name: "CloudGPU US East",
+    host_id: 1,
+    host_name: "CloudGPU US East",
     country: "United States",
+    region: "us-east-1",
     total_machines: 450,
     total_tflops: 1620,
     avg_dlperf_per_dollar: 425,
@@ -152,9 +153,10 @@ const mockProviderData: GPUProvider[] = [
     created_at: new Date().toISOString()
   },
   {
-    id: 2,
-    provider_name: "EuroCompute",
-    country: "Germany", 
+    host_id: 2,
+    host_name: "EuroCompute",
+    country: "Germany",
+    region: "eu-central-1", 
     total_machines: 280,
     total_tflops: 980,
     avg_dlperf_per_dollar: 390,
@@ -162,9 +164,10 @@ const mockProviderData: GPUProvider[] = [
     created_at: new Date().toISOString()
   },
   {
-    id: 3,
-    provider_name: "NetherlandsGPU",
+    host_id: 3,
+    host_name: "NetherlandsGPU",
     country: "Netherlands",
+    region: "eu-west-1",
     total_machines: 120,
     total_tflops: 420,
     avg_dlperf_per_dollar: 410,
@@ -172,9 +175,10 @@ const mockProviderData: GPUProvider[] = [
     created_at: new Date().toISOString()
   },
   {
-    id: 4,
-    provider_name: "CanadianCloud",
+    host_id: 4,
+    host_name: "CanadianCloud",
     country: "Canada",
+    region: "ca-central-1",
     total_machines: 95,
     total_tflops: 340,
     avg_dlperf_per_dollar: 385,
