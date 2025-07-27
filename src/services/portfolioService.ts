@@ -144,6 +144,59 @@ export class PortfolioService {
   }
 
   /**
+   * Adds real marketplace offers to a portfolio using actual offer IDs from our database.
+   * @param userId The ID of the user.
+   * @param portfolioId The ID of the portfolio.
+   * @param data The marketplace offer data (offerIds, customName).
+   * @returns An array of the newly created GPU instance objects linked to real offers.
+   */
+  async addMarketplaceOffers(userId: string, portfolioId: string, data: { offerIds: number[]; customName?: string }) {
+    // First, verify the user owns the portfolio
+    const portfolio = await this.db.prepare('SELECT id FROM portfolios WHERE id = ? AND user_id = ?').bind(portfolioId, userId).first();
+    if (!portfolio) {
+      return null;
+    }
+
+    // Verify all offer IDs exist in our marketplace data
+    const placeholders = data.offerIds.map(() => '?').join(',');
+    const offersStmt = this.db.prepare(`SELECT offer_id, gpu_name, price_base_per_hour, location FROM gpu_marketplace_offers WHERE offer_id IN (${placeholders})`);
+    const { results: offers } = await offersStmt.bind(...data.offerIds).all();
+    
+    if (offers.length !== data.offerIds.length) {
+      return null; // Some offer IDs are invalid
+    }
+
+    // Create GPU instances linked to real marketplace offers
+    const stmts = [];
+    const newInstances = [];
+
+    for (const offer of offers) {
+      const instance = {
+        id: crypto.randomUUID(),
+        portfolio_id: portfolioId,
+        gpu_model: offer.gpu_name,
+        custom_name: data.customName || `${offer.gpu_name} - ${offer.location}`,
+        platform_instance_id: offer.offer_id.toString(), // Store the real offer ID
+        settings: JSON.stringify({
+          offer_id: offer.offer_id,
+          base_price: offer.price_base_per_hour,
+          location: offer.location
+        }),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      newInstances.push(instance);
+      stmts.push(
+        this.db.prepare('INSERT INTO gpu_instances (id, portfolio_id, gpu_model, custom_name, platform_instance_id, settings, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+          .bind(instance.id, instance.portfolio_id, instance.gpu_model, instance.custom_name, instance.platform_instance_id, instance.settings, instance.created_at, instance.updated_at)
+      );
+    }
+
+    await this.db.batch(stmts);
+    return newInstances;
+  }
+
+  /**
    * Updates a single GPU instance.
    * @param userId The ID of the user.
    * @param portfolioId The ID of the portfolio containing the GPU.

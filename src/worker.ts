@@ -1,10 +1,10 @@
 /**
  * Cloudflare Workers entry point for GPUScout Platform
- * Handles authentication and API routing
+ * Handles API routing for market data and portfolio management
  */
 
-import { authHandler } from './api/authRouter';
 import { marketDataHandler } from './api/marketDataRouter';
+import { portfolioHandler } from './api/portfolioRouter';
 import { rateLimitHandler } from './middleware/rateLimit';
 import { corsHandler } from './middleware/cors';
 import { handleScheduled, handleManualScheduled, getScheduledJobStatus } from './handlers/scheduledHandler';
@@ -13,8 +13,6 @@ import { handleDiagnostics } from './api/diagnosticRouter';
 export interface Env {
   DB: D1Database;
   CACHE: KVNamespace;
-  JWT_SECRET: string;
-  SENDGRID_API_KEY: string;
   APP_URL: string;
   DISCORD_WEBHOOK_URL: string;
   SENTRY_DSN?: string;
@@ -36,15 +34,15 @@ export default {
       return rateLimitResponse;
     }
     
-    // Route to authentication endpoints
-    if (url.pathname.startsWith('/api/auth/')) {
-      const response = await authHandler(request, env);
-      return corsHandler(request, response);
-    }
-    
     // Route to market data endpoints
     if (url.pathname.startsWith('/api/market/')) {
       const response = await marketDataHandler(request, env);
+      return corsHandler(request, response);
+    }
+    
+    // Route to portfolio management endpoints
+    if (url.pathname.startsWith('/api/portfolios')) {
+      const response = await portfolioHandler(request, env);
       return corsHandler(request, response);
     }
     

@@ -1,113 +1,243 @@
-import { Router, IRequest } from 'itty-router';
 import { PortfolioService } from '../services/portfolioService';
 import { Env } from '../worker';
 
-// Assume an authentication middleware runs before this router,
-// attaching a `user` object to the request.
-interface AuthenticatedRequest extends IRequest {
-  user: { id: string; tier: string };
+// Since we removed authentication, we'll use a default user ID
+const DEFAULT_USER_ID = 'anonymous';
+
+// Portfolio handler function for the main worker
+export async function portfolioHandler(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.pathname.replace('/api/portfolios', '');
+  const method = request.method;
+
+  const service = new PortfolioService(env.DB);
+
+  try {
+    // Parse path segments
+    const segments = path.split('/').filter(Boolean);
+    
+    if (segments.length === 0) {
+      // /api/portfolios/
+      if (method === 'POST') {
+        return await createPortfolio(request, service);
+      } else if (method === 'GET') {
+        return await getPortfolios(service);
+      }
+    } else if (segments.length === 1) {
+      // /api/portfolios/:portfolioId
+      const portfolioId = segments[0];
+      if (method === 'GET') {
+        return await getPortfolioById(service, portfolioId);
+      } else if (method === 'PUT') {
+        return await updatePortfolio(request, service, portfolioId);
+      } else if (method === 'DELETE') {
+        return await deletePortfolio(service, portfolioId);
+      }
+    } else if (segments.length === 2 && segments[1] === 'gpus') {
+      // /api/portfolios/:portfolioId/gpus
+      const portfolioId = segments[0];
+      if (method === 'POST') {
+        return await addGpuInstances(request, service, portfolioId);
+      }
+    } else if (segments.length === 3 && segments[1] === 'gpus') {
+      // /api/portfolios/:portfolioId/gpus/:gpuId
+      const portfolioId = segments[0];
+      const gpuId = segments[2];
+      if (method === 'PUT') {
+        return await updateGpuInstance(request, service, portfolioId, gpuId);
+      } else if (method === 'DELETE') {
+        return await deleteGpuInstance(env, portfolioId, gpuId);
+      }
+    } else if (segments.length === 1 && segments[0] === 'marketplace-offers') {
+      // /api/portfolios/marketplace-offers
+      if (method === 'GET') {
+        return await getMarketplaceOffers(env);
+      }
+    }
+
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Not Found',
+      message: 'Portfolio endpoint not found'
+    }), { status: 404 });
+
+  } catch (error) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }), { status: 500 });
+  }
 }
 
-const router = Router({ base: '/api/v1/portfolios' });
-
-// Middleware to initialize the service
-const withService = (req: IRequest, env: Env) => {
-  req.service = new PortfolioService(env.DB);
-};
-
-router.post('/', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const { name, description } = await req.json();
+// Handler functions
+async function createPortfolio(request: Request, service: PortfolioService): Promise<Response> {
+  const { name, description } = await request.json();
   if (!name) {
-    return new Response(JSON.stringify({ success: false, error: 'Portfolio name is required' }), { status: 400 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Portfolio name is required' 
+    }), { status: 400 });
   }
-  const portfolio = await req.service.createPortfolio(req.user.id, { name, description });
-  return new Response(JSON.stringify({ success: true, data: portfolio }), { status: 201 });
-});
+  
+  const portfolio = await service.createPortfolio(DEFAULT_USER_ID, { name, description });
+  return new Response(JSON.stringify({ 
+    success: true, 
+    data: portfolio 
+  }), { status: 201 });
+}
 
-router.get('/', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const portfolios = await req.service.getPortfolios(req.user.id);
-  return new Response(JSON.stringify({ success: true, data: portfolios }));
-});
+async function getPortfolios(service: PortfolioService): Promise<Response> {
+  const portfolios = await service.getPortfolios(DEFAULT_USER_ID);
+  return new Response(JSON.stringify({ 
+    success: true, 
+    data: portfolios 
+  }));
+}
 
-router.get('/:portfolioId', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const { portfolioId } = req.params;
-  const portfolio = await req.service.getPortfolioById(req.user.id, portfolioId);
+async function getPortfolioById(service: PortfolioService, portfolioId: string): Promise<Response> {
+  const portfolio = await service.getPortfolioById(DEFAULT_USER_ID, portfolioId);
   if (!portfolio) {
-    return new Response(JSON.stringify({ success: false, error: 'Portfolio not found' }), { status: 404 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Portfolio not found' 
+    }), { status: 404 });
   }
-  return new Response(JSON.stringify({ success: true, data: portfolio }));
-});
+  return new Response(JSON.stringify({ 
+    success: true, 
+    data: portfolio 
+  }));
+}
 
-router.put('/:portfolioId', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const { portfolioId } = req.params;
-  const body = await req.json();
-  const portfolio = await req.service.updatePortfolio(req.user.id, portfolioId, body);
+async function updatePortfolio(request: Request, service: PortfolioService, portfolioId: string): Promise<Response> {
+  const body = await request.json();
+  const portfolio = await service.updatePortfolio(DEFAULT_USER_ID, portfolioId, body);
   if (!portfolio) {
-    return new Response(JSON.stringify({ success: false, error: 'Portfolio not found' }), { status: 404 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Portfolio not found' 
+    }), { status: 404 });
   }
-  return new Response(JSON.stringify({ success: true, data: portfolio }));
-});
+  return new Response(JSON.stringify({ 
+    success: true, 
+    data: portfolio 
+  }));
+}
 
-router.delete('/:portfolioId', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const { portfolioId } = req.params;
-  const success = await req.service.deletePortfolio(req.user.id, portfolioId);
+async function deletePortfolio(service: PortfolioService, portfolioId: string): Promise<Response> {
+  const success = await service.deletePortfolio(DEFAULT_USER_ID, portfolioId);
   if (!success) {
-    // This could be due to not found or a db error, 404 is a safe bet.
-    return new Response(JSON.stringify({ success: false, error: 'Portfolio not found or could not be deleted' }), { status: 404 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Portfolio not found or could not be deleted' 
+    }), { status: 404 });
   }
   return new Response(null, { status: 204 });
-});
+}
 
-// GPU Instance Routes
+async function addGpuInstances(request: Request, service: PortfolioService, portfolioId: string): Promise<Response> {
+  const { offerIds, customName } = await request.json();
 
-router.post('/:portfolioId/gpus', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const { portfolioId } = req.params;
-  const { gpuModel, quantity, customNamePrefix } = await req.json();
-
-  if (!gpuModel || !quantity || quantity < 1) {
-    return new Response(JSON.stringify({ success: false, error: 'gpuModel and a valid quantity are required' }), { status: 400 });
+  if (!offerIds || !Array.isArray(offerIds) || offerIds.length === 0) {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'offerIds array is required and must not be empty' 
+    }), { status: 400 });
   }
 
-  const newInstances = await req.service.addGpuInstances(req.user.id, portfolioId, { gpuModel, quantity, customNamePrefix });
+  const newInstances = await service.addMarketplaceOffers(DEFAULT_USER_ID, portfolioId, { 
+    offerIds, 
+    customName 
+  });
+  
   if (!newInstances) {
-    return new Response(JSON.stringify({ success: false, error: 'Portfolio not found' }), { status: 404 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Portfolio not found or offers invalid' 
+    }), { status: 404 });
   }
 
-  return new Response(JSON.stringify({ success: true, data: newInstances }), { status: 201 });
-});
+  return new Response(JSON.stringify({ 
+    success: true, 
+    data: newInstances 
+  }), { status: 201 });
+}
 
-router.put('/:portfolioId/gpus/:gpuId', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const { portfolioId, gpuId } = req.params;
-  const body = await req.json();
-
-  const updatedInstance = await req.service.updateGpuInstance(req.user.id, portfolioId, gpuId, body);
+async function updateGpuInstance(request: Request, service: PortfolioService, portfolioId: string, gpuId: string): Promise<Response> {
+  const body = await request.json();
+  const updatedInstance = await service.updateGpuInstance(DEFAULT_USER_ID, portfolioId, gpuId, body);
+  
   if (!updatedInstance) {
-    return new Response(JSON.stringify({ success: false, error: 'GPU instance not found' }), { status: 404 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'GPU instance not found' 
+    }), { status: 404 });
   }
 
-  return new Response(JSON.stringify({ success: true, data: updatedInstance }));
-});
+  return new Response(JSON.stringify({ 
+    success: true, 
+    data: updatedInstance 
+  }));
+}
 
-router.delete('/:portfolioId/gpus/:gpuId', withService, async (req: AuthenticatedRequest, env: Env) => {
-  const { portfolioId, gpuId } = req.params;
+async function deleteGpuInstance(env: Env, portfolioId: string, gpuId: string): Promise<Response> {
+  // Check if portfolio exists for the default user
+  const portfolio = await env.DB.prepare('SELECT id FROM portfolios WHERE id = ? AND user_id = ?')
+    .bind(portfolioId, DEFAULT_USER_ID).first();
   
-  // The service needs a method for this. Let's assume it's added.
-  // For now, we can't implement the handler without the service method.
-  // I will add a placeholder.
-  // await req.service.deleteGpuInstance(req.user.id, portfolioId, gpuId);
-  
-  // Placeholder implementation:
-  const portfolio = await env.DB.prepare('SELECT id FROM portfolios WHERE id = ? AND user_id = ?').bind(portfolioId, req.user.id).first();
   if (!portfolio) {
-    return new Response(JSON.stringify({ success: false, error: 'Portfolio not found' }), { status: 404 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Portfolio not found' 
+    }), { status: 404 });
   }
-  const { success } = await env.DB.prepare('DELETE FROM gpu_instances WHERE id = ? AND portfolio_id = ?').bind(gpuId, portfolioId).run();
+  
+  const { success } = await env.DB.prepare('DELETE FROM gpu_instances WHERE id = ? AND portfolio_id = ?')
+    .bind(gpuId, portfolioId).run();
 
   if (!success) {
-     return new Response(JSON.stringify({ success: false, error: 'GPU instance not found or could not be deleted' }), { status: 404 });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'GPU instance not found or could not be deleted' 
+    }), { status: 404 });
   }
 
   return new Response(null, { status: 204 });
-});
+}
 
-export const portfolioRouter = router;
+async function getMarketplaceOffers(env: Env): Promise<Response> {
+  try {
+    const stmt = env.DB.prepare(`
+      SELECT 
+        offer_id,
+        gpu_name,
+        num_gpus,
+        price_base_per_hour,
+        dlperf,
+        dlperf_per_dollar,
+        reliability_score,
+        country,
+        location,
+        rentable,
+        verified
+      FROM gpu_marketplace_offers 
+      WHERE rentable = 1 AND verified = 1
+      ORDER BY dlperf_per_dollar DESC
+      LIMIT 50
+    `);
+    
+    const { results: offers } = await stmt.all();
+    
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: offers 
+    }));
+  } catch (error) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Failed to fetch marketplace offers',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }), { status: 500 });
+  }
+}
+
