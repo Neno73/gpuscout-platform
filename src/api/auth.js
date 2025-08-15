@@ -103,8 +103,6 @@ export async function handleRegistration(request, env) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Registration error:', error);
-    
     if (error.name === 'ZodError') {
       return Response.json(
         { 

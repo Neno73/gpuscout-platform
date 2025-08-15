@@ -10,7 +10,13 @@ import * as bcrypt from 'bcryptjs';
 
 // Mock dependencies
 jest.mock('../../utils/password.js');
-jest.mock('../../utils/jwt.js');
+jest.mock('../../utils/jwt.js', () => ({
+  ...jest.requireActual('../../utils/jwt.js'),
+  __esModule: true,
+  generateVerificationToken: jest.fn(),
+  generateTokens: jest.fn(),
+  generateResetToken: jest.fn(),
+}));
 jest.mock('../../utils/email.js');
 jest.mock('../../utils/rateLimit.js');
 
@@ -158,22 +164,15 @@ describe('User Registration API', () => {
     expect(response.status).toBe(400);
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/validation/i);
-    expect(result.fieldErrors).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          field: 'email',
-          message: expect.stringContaining('Invalid email')
-        }),
-        expect.objectContaining({
-          field: 'password', 
-          message: expect.stringContaining('8 characters')
-        }),
-        expect.objectContaining({
-          field: 'name',
-          message: expect.stringContaining('required')
-        })
-      ])
-    );
+    expect(result.fieldErrors).toHaveLength(8);
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ field: 'email' }));
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ message: 'Password must be at least 8 characters' }));
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ message: 'Password must contain at least one uppercase letter' }));
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ message: 'Password must contain at least one number' }));
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ message: 'Password must contain at least one special character (@$!%*?&)' }));
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ field: 'name' }));
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ field: 'timezone' }));
+    expect(result.fieldErrors).toContainEqual(expect.objectContaining({ field: 'gdprConsent' }));
   });
 
   test('enforces rate limiting', async () => {
