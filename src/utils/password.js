@@ -26,7 +26,7 @@ export async function verifyPassword(password, hash) {
  * @returns {boolean} - True if hash uses 12 salt rounds
  */
 export function isSecureHash(hash) {
-  // bcrypt format: $2b$rounds$salt$hash
+  // bcrypt format: $2a$rounds$saltandhash
   if (!hash || typeof hash !== 'string') {
     return false;
   }
@@ -36,8 +36,12 @@ export function isSecureHash(hash) {
     return false;
   }
   
+  const version = parts[1];
   const rounds = parseInt(parts[2], 10);
-  return rounds === 12;
+  const saltAndHash = parts[3];
+
+  // A valid salt+hash body is 53 characters long.
+  return (version === '2a' || version === '2b') && rounds === 12 && saltAndHash && saltAndHash.length === 53;
 }
 
 /**

@@ -10,7 +10,7 @@ export function validateEmail(email) {
     return false;
   }
   
-  const emailSchema = z.string().email();
+  const emailSchema = z.string().email().max(254);
   
   try {
     emailSchema.parse(email);
@@ -92,14 +92,21 @@ export function validatePasswordStrength(password) {
 }
 
 /**
+ * Reusable Zod schema for password validation
+ */
+const passwordValidationSchema = z.string()
+  .min(8, { message: 'Password must be at least 8 characters' })
+  .refine(val => /[a-z]/.test(val), { message: 'Password must contain at least one lowercase letter' })
+  .refine(val => /[A-Z]/.test(val), { message: 'Password must contain at least one uppercase letter' })
+  .refine(val => /\d/.test(val), { message: 'Password must contain at least one number' })
+  .refine(val => /[@$!%*?&]/.test(val), { message: 'Password must contain at least one special character (@$!%*?&)' });
+
+/**
  * Zod schema for user registration
  */
 export const registrationSchema = z.object({
   email: z.string().email('Invalid email format'),
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]$/,
-           'Password must contain uppercase, lowercase, number, and special character'),
+  password: passwordValidationSchema,
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   timezone: z.string().min(1, 'Timezone is required'),
   language: z.enum(['en', 'es', 'fr', 'de']).default('en'),
@@ -135,10 +142,7 @@ export const forgotPasswordSchema = z.object({
  */
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
-  newPassword: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]$/,
-           'Password must contain uppercase, lowercase, number, and special character'),
+  newPassword: passwordValidationSchema,
   confirmPassword: z.string().min(1, 'Password confirmation is required')
 }).refine(data => data.newPassword === data.confirmPassword, {
   message: 'Passwords do not match',

@@ -14,8 +14,9 @@ const mockEnv = {
   JWT_SECRET: 'test-jwt-secret-key-for-testing-only'
 };
 
+const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
+
 describe('JWT Token Management', () => {
-  const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
   const mockSecret = 'test-jwt-secret-key';
   
   test('generates valid access and refresh tokens', async () => {
@@ -64,11 +65,11 @@ describe('JWT Token Management', () => {
     const secret = new TextEncoder().encode(mockSecret);
     const expiredToken = await new SignJWT({ userId: mockUserId })
       .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('1ms')
+      .setExpirationTime('1s')
       .sign(secret);
     
     // Wait for token to expire
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise(resolve => setTimeout(resolve, 1100));
     
     await expect(verifyToken(expiredToken, { JWT_SECRET: mockSecret }))
       .rejects.toThrow();

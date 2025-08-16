@@ -68,7 +68,6 @@ CREATE INDEX idx_retention_jobs_date ON data_retention_jobs(target_date, job_typ
 
 -- Add retention metadata to existing tables for tracking
 ALTER TABLE gpu_market_stats ADD COLUMN expires_at DATETIME;
-ALTER TABLE gpu_marketplace_offers ADD COLUMN expires_at DATETIME;
 ALTER TABLE gpu_providers ADD COLUMN expires_at DATETIME;
 ALTER TABLE gpu_availability_metrics ADD COLUMN expires_at DATETIME;
 

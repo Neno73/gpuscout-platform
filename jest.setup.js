@@ -13,9 +13,16 @@ if (typeof global.TextDecoder === 'undefined') {
 // Mock fetch for API calls
 global.fetch = jest.fn();
 
-// Mock crypto.randomUUID
+// Mock crypto.randomUUID to be deterministic but unique for each call
+let uuidCounter = 0;
 global.crypto = {
-  randomUUID: jest.fn(() => '550e8400-e29b-41d4-a716-446655440000')
+  ...global.crypto,
+  randomUUID: jest.fn(() => {
+    uuidCounter += 1;
+    const base = '550e8400-e29b-41d4-a716-';
+    const count = String(uuidCounter).padStart(12, '0');
+    return `${base}${count}`;
+  })
 };
 
 // Mock console methods to reduce noise in tests
